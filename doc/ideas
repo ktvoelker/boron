@@ -1,0 +1,31 @@
+
+Simple Build Server
+===================
+
+INI config file
+* Each section is a build
+* In each section:
+  * Init script (which is passed the directory path to create)
+  * Poll interval
+  * Poll script path within repo (which is run in the directory)
+  * Build script path within repo (which is run in the directory)
+
+Global config options
+* Output path
+* Working directory
+
+At startup, write a JSON file to the output path that lists the builds.
+
+Whenever a build completes, write data about it to a JSON file in that
+build's output directory.
+
+
+Internal Structure
+==================
+
+After startup, a separate process is spawned for each build. The processes can
+be caused to force a build immediately by sending SIGUSR1.
+
+Each process sets its name so that the process for a particular build can be
+easily identified.
+
