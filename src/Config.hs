@@ -1,62 +1,78 @@
 
 module Config where
 
+import Control.Category
+import Data.Functor
 import qualified Data.HashMap.Strict as HMS
 import Data.Ini
 import Data.Monoid
 import qualified Data.Text as T
 import Data.Time
+import Filesystem.Path.CurrentOS
+import Prelude hiding (id, (.), FilePath)
 
 import Util
 
 data Build =
   Build
   { buildName         :: T.Text
-  , buildInitializer  :: T.Text
+  , buildSource       :: T.Text
   , buildPollInterval :: NominalDiffTime
-  , buildPoller       :: T.Text
-  , buildBuilder      :: T.Text
-  , buildOutputDir    :: T.Text
-  , buildWorkDir      :: T.Text
-  } deriving (Eq, Ord, Show)
+  , buildPoller       :: FilePath
+  , buildBuilder      :: FilePath
+  , buildOutputDir    :: FilePath
+  , buildWorkDir      :: FilePath
+  } deriving (Show)
+
+data Config =
+  Config
+  { configMasterFile :: FilePath
+  , configBuilds     :: [Build]
+  } deriving (Show)
 
 get :: T.Text -> T.Text -> HMS.HashMap T.Text a -> IO a
 get section key hm = case HMS.lookup key hm of
   Nothing -> abort $ "Missing " <> section <> "." <> key
   Just value -> return value
 
-parseConfig :: Ini -> IO [Build]
+masterFileName :: FilePath
+masterFileName = fromText "builds.json"
+
+parseConfig :: Ini -> IO Config
 parseConfig ini = do
-  output <- get "" "output" global
-  work <- get "" "work" global
-  mapM (uncurry $ makeBuild output work) builds
+  output <- fromText <$> get "" "output" global
+  work <- fromText <$> get "" "work" global
+  let masterFile = output </> masterFileName
+  Config masterFile <$> mapM (uncurry $ makeBuild output work) builds
   where
     hm = unIni ini
     global = maybe HMS.empty id $ HMS.lookup "" hm
     builds = filter (not . T.null . fst) $ HMS.toList hm
 
-makeBuild :: T.Text -> T.Text -> T.Text -> HMS.HashMap T.Text T.Text -> IO Build
+makeBuild :: FilePath -> FilePath -> T.Text -> HMS.HashMap T.Text T.Text -> IO Build
 makeBuild output work name section = do
-  init <- get' "init"
+  source <- get' "source"
   intervalText <- get' "interval"
-  poll <- get' "poll"
-  build <- get' "build"
+  poll <- fromText <$> get' "poll"
+  build <- fromText <$> get' "build"
   interval <- case parseInterval intervalText of
     Nothing -> abort "Invalid interval"
     Just n -> return n
   return $
     Build
     { buildName = name
-    , buildInitializer = init
+    , buildSource = source
     , buildPollInterval = interval
     , buildPoller = poll
     , buildBuilder = build
-    , buildOutputDir = output <> "/" <> name
-    , buildWorkDir = work <> "/" <> name
+    , buildOutputDir = output </> fromText name
+    , buildWorkDir = work </> fromText name
     }
   where
     get' = flip (get name) section
 
 parseInterval :: T.Text -> Maybe NominalDiffTime
-parseInterval = todo
+parseInterval = T.unpack >>> reads >>> \case
+  [(ndt, "")] -> Just $ fromInteger ndt
+  _ -> Nothing
 

@@ -1,0 +1,10 @@
+
+TODO
+====
+
+Make output and work dir paths absolute in Config
+
+Pad build numbers in file names with leading zeroes for better lexicographical sorting
+
+Write the list of builds to a JSON file called builds.json in each build output dir
+
