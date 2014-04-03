@@ -2,8 +2,6 @@
 TODO
 ====
 
-Use JSON for the config file, for consistency (and because hsini is buggy)
-
 Create all directories as needed
 
 Make output and work dir paths absolute in Config

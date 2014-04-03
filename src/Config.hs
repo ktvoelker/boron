@@ -1,15 +1,16 @@
 
 module Config where
 
+import Control.Applicative
 import Control.Category
-import Data.Functor
-import qualified Data.HashMap.Strict as HMS
-import Data.Ini
-import Data.Monoid
+import Control.Monad
 import qualified Data.Text as T
+import Data.Text.Encoding
 import Data.Time
+import Filesystem
 import Filesystem.Path.CurrentOS
-import Prelude hiding (id, (.), FilePath)
+import Prelude hiding (id, (.), FilePath, readFile)
+import Text.JSON
 
 import Util
 
@@ -30,49 +31,55 @@ data Config =
   , configBuilds     :: [Build]
   } deriving (Show)
 
-get :: T.Text -> T.Text -> HMS.HashMap T.Text a -> IO a
-get section key hm = case HMS.lookup key hm of
-  Nothing -> abort $ "Missing " <> section <> "." <> key
-  Just value -> return value
+type JSReader a = JSValue -> Result a
+
+instance JSON FilePath where
+  showJSON = showJSON . toText
+  readJSON = fmap fromText . readJSON
+  
+instance JSON NominalDiffTime where
+  showJSON = showJSON . (fromRational :: Rational -> Double) . toRational
+  readJSON = fmap (fromRational . (toRational :: Double -> Rational)) . readJSON
+
+readBuild :: T.Text -> FilePath -> FilePath -> JSReader Build
+readBuild name output work (JSObject obj) =
+  Build name
+  <$> valFromObj "source" obj
+  <*> valFromObj "interval" obj
+  <*> valFromObj "poll" obj
+  <*> valFromObj "build" obj
+  <*> pure output
+  <*> pure work
+readBuild _ _ _ _ = Error "A build must be a JSON object"
+
+readBuilds :: FilePath -> FilePath -> JSReader [Build]
+readBuilds output work = decJSDict "Builds" >=> mapM (uncurry f)
+  where
+    f key = readBuild key (output </> key') (work </> key')
+      where
+        key' = fromText key
+
+instance JSKey T.Text where
+  toJSKey = T.unpack
+  fromJSKey = Just . T.pack
 
 masterFileName :: FilePath
 masterFileName = fromText "builds.json"
 
-parseConfig :: Ini -> IO Config
-parseConfig ini = do
-  output <- fromText <$> get "" "output" global
-  work <- fromText <$> get "" "work" global
-  let masterFile = output </> masterFileName
-  Config masterFile <$> mapM (uncurry $ makeBuild output work) builds
-  where
-    hm = unIni ini
-    global = maybe HMS.empty id $ HMS.lookup "" hm
-    builds = filter (not . T.null . fst) $ HMS.toList hm
+readConfig :: JSReader Config
+readConfig (JSObject obj) = do
+  output <- valFromObj "output" obj
+  work   <- valFromObj "work" obj
+  builds <- valFromObj "builds" obj >>= readBuilds output work
+  return $ Config (output </> masterFileName) builds
+readConfig _ = Error "A config must be a JSON object"
 
-makeBuild :: FilePath -> FilePath -> T.Text -> HMS.HashMap T.Text T.Text -> IO Build
-makeBuild output work name section = do
-  source <- get' "source"
-  intervalText <- get' "interval"
-  poll <- fromText <$> get' "poll"
-  build <- fromText <$> get' "build"
-  interval <- case parseInterval intervalText of
-    Nothing -> abort "Invalid interval"
-    Just n -> return n
-  return $
-    Build
-    { buildName = name
-    , buildSource = source
-    , buildPollInterval = interval
-    , buildPoller = poll
-    , buildBuilder = build
-    , buildOutputDir = output </> fromText name
-    , buildWorkDir = work </> fromText name
-    }
+parseConfig :: FilePath -> IO Config
+parseConfig =
+  readFile
+  >>> fmap (decodeUtf8 >>> T.unpack >>> decodeStrict >=> readConfig)
+  >=> abortOnError
   where
-    get' = flip (get name) section
-
-parseInterval :: T.Text -> Maybe NominalDiffTime
-parseInterval = T.unpack >>> reads >>> \case
-  [(ndt, "")] -> Just $ fromInteger ndt
-  _ -> Nothing
+    abortOnError (Ok x) = return x
+    abortOnError (Error msg) = abort $ T.pack msg
 
