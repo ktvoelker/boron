@@ -3,6 +3,7 @@ module Slave where
 
 import Control.Concurrent
 import Control.Monad
+import Data.Char
 import Data.Functor
 import Data.Monoid
 import qualified Data.Text as T
@@ -43,7 +44,12 @@ runPoll :: FilePath -> IO Bool
 runPoll fp = (/= ExitSuccess) <$> run (encodeString fp) []
 
 getFirstBuildNumber :: IO Integer
-getFirstBuildNumber = todo
+getFirstBuildNumber =
+  (+ 1) . maximum . map f <$> (getWorkingDirectory >>= listDirectory)
+  where
+    f fp = if extensions fp == ["json"] && all isDigit bn then read bn else 0
+      where
+        bn = encodeString $ basename fp
 
 timeToJSValue :: UTCTime -> JSValue
 timeToJSValue = showJSON . show
