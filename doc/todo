@@ -2,9 +2,19 @@
 TODO
 ====
 
+Use JSON for the config file, for consistency (and because hsini is buggy)
+
+Create all directories as needed
+
 Make output and work dir paths absolute in Config
 
 Pad build numbers in file names with leading zeroes for better lexicographical sorting
 
 Write the list of builds to a JSON file called builds.json in each build output dir
+
+Restart workers that die
+
+Handle the TERM signal by terminating all workers, waiting for them, and then exiting
+
+Tests!
 
