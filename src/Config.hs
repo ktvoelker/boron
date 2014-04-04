@@ -27,7 +27,8 @@ data Build =
 
 data Config =
   Config
-  { configMasterFile :: FilePath
+  { configOutputDir  :: FilePath
+  , configWorkDir    :: FilePath
   , configBuilds     :: [Build]
   } deriving (Show)
 
@@ -63,9 +64,6 @@ instance JSKey T.Text where
   toJSKey = T.unpack
   fromJSKey = Just . T.pack
 
-masterFileName :: FilePath
-masterFileName = fromText "builds.json"
-
 absolutize :: FilePath -> FilePath -> FilePath
 absolutize root rel = collapse $ root </> rel
 
@@ -74,7 +72,7 @@ readConfig root (JSObject obj) = do
   output <- absolutize root <$> valFromObj "output" obj
   work   <- absolutize root <$> valFromObj "work" obj
   builds <- valFromObj "builds" obj >>= readBuilds output work
-  return $ Config (output </> masterFileName) builds
+  return $ Config output work builds
 readConfig _ _ = Error "A config must be a JSON object"
 
 parseConfig :: FilePath -> IO Config

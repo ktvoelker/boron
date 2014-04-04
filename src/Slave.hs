@@ -93,6 +93,7 @@ runBuild builder outputDir var = do
 
 runSlave :: Build -> IO ()
 runSlave Build{..} = do
+  ensureDirectory buildOutputDir
   needSource <- not <$> isDirectory buildWorkDir
   when needSource $ getSource buildSource buildWorkDir
   setWorkingDirectory buildWorkDir
