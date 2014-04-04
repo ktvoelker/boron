@@ -107,9 +107,9 @@ runBuild builder outputDir summaryFile var = do
 runSlave :: Build -> IO ()
 runSlave Build{..} = do
   ensureDirectory buildOutputDir
+  buildVar <- listDirectory buildOutputDir >>= (getFirstBuildNumber >>> newMVar)
   needSource <- not <$> isDirectory buildWorkDir
   when needSource $ getSource buildSource buildWorkDir
-  buildVar <- listDirectory buildWorkDir >>= (getFirstBuildNumber >>> newMVar)
   setWorkingDirectory buildWorkDir
   let summaryFile = buildOutputDir </> "index.json"
   let doBuild = runBuild buildBuilder buildOutputDir summaryFile buildVar
