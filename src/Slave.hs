@@ -1,6 +1,7 @@
 
 module Slave where
 
+import Control.Category
 import Control.Concurrent
 import Control.Monad
 import Data.Char
@@ -11,7 +12,7 @@ import Data.Text.Encoding
 import Data.Time
 import Filesystem
 import Filesystem.Path.CurrentOS
-import Prelude hiding (FilePath, writeFile)
+import Prelude hiding (FilePath, writeFile, id, (.))
 import System.Exit
 import System.Process
 import Text.JSON
@@ -43,9 +44,8 @@ wait = threadDelay . round . (* microsecondsPerSecond) . toRational
 runPoll :: FilePath -> IO Bool
 runPoll fp = (/= ExitSuccess) <$> run (encodeString fp) []
 
-getFirstBuildNumber :: IO Integer
-getFirstBuildNumber =
-  (+ 1) . maximum . map f <$> (getWorkingDirectory >>= listDirectory)
+getFirstBuildNumber :: [FilePath] -> Integer
+getFirstBuildNumber = (+ 1) . maximum . (0 :) . map f
   where
     f fp = if extensions fp == ["json"] && all isDigit bn then read bn else 0
       where
@@ -67,10 +67,19 @@ makeMetaFile startTime endTime result =
       ExitSuccess -> JSNull
       ExitFailure code -> showJSON code
 
+minBuildNumberLength :: Int
+minBuildNumberLength = 5
+
+formatBuildNumber :: Integer -> T.Text
+formatBuildNumber n = padding <> base
+  where
+    base = T.pack $ show n
+    padding = T.replicate (max 0 (minBuildNumberLength - T.length base)) "0"
+
 runBuild :: FilePath -> FilePath -> MVar Integer -> IO ()
 runBuild builder outputDir var = do
   buildNumber <- takeMVar var
-  let numText = T.pack $ show buildNumber
+  let numText = formatBuildNumber buildNumber
   let metaFile = outputDir </> (fromText numText <.> "json")
   let stdOutFile = outputDir </> (fromText (numText <> "-out") <.> "txt")
   let stdErrFile = outputDir </> (fromText (numText <> "-err") <.> "txt")
@@ -96,8 +105,8 @@ runSlave Build{..} = do
   ensureDirectory buildOutputDir
   needSource <- not <$> isDirectory buildWorkDir
   when needSource $ getSource buildSource buildWorkDir
+  buildVar <- listDirectory buildWorkDir >>= (getFirstBuildNumber >>> newMVar)
   setWorkingDirectory buildWorkDir
-  buildVar <- getFirstBuildNumber >>= newMVar
   let doBuild = runBuild buildBuilder buildOutputDir buildVar
   when needSource doBuild
   forever $ do
