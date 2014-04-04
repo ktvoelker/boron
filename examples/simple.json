@@ -1,6 +1,6 @@
 {
-  "output": "/Users/karl/Projects/boron/examples/output",
-  "work": "/Users/karl/Projects/boron/examples/work",
+  "output": "./output",
+  "work": "./work",
   "builds": {
     "foo": {
       "source": "git://github.com/ktvoelker/boron.git",

@@ -66,20 +66,23 @@ instance JSKey T.Text where
 masterFileName :: FilePath
 masterFileName = fromText "builds.json"
 
-readConfig :: JSReader Config
-readConfig (JSObject obj) = do
-  output <- valFromObj "output" obj
-  work   <- valFromObj "work" obj
+absolutize :: FilePath -> FilePath -> FilePath
+absolutize root rel = collapse $ root </> rel
+
+readConfig :: FilePath -> JSReader Config
+readConfig root (JSObject obj) = do
+  output <- absolutize root <$> valFromObj "output" obj
+  work   <- absolutize root <$> valFromObj "work" obj
   builds <- valFromObj "builds" obj >>= readBuilds output work
   return $ Config (output </> masterFileName) builds
-readConfig _ = Error "A config must be a JSON object"
+readConfig _ _ = Error "A config must be a JSON object"
 
 parseConfig :: FilePath -> IO Config
-parseConfig =
-  readFile
-  >>> fmap (decodeUtf8 >>> T.unpack >>> decodeStrict >=> readConfig)
-  >=> abortOnError
+parseConfig fp = do
+  fp' <- absolutize <$> getWorkingDirectory <*> pure fp
+  (f (directory fp') <$> readFile fp') >>= abortOnError
   where
     abortOnError (Ok x) = return x
     abortOnError (Error msg) = abort $ T.pack msg
+    f root = decodeUtf8 >>> T.unpack >>> decodeStrict >=> readConfig root
 
