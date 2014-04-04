@@ -2,8 +2,6 @@
 TODO
 ====
 
-Write the list of builds to a JSON file called builds.json in each build output dir
-
 Restart workers that die
 
 Handle the TERM signal by terminating all workers, waiting for them, and then exiting

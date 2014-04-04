@@ -76,11 +76,12 @@ formatBuildNumber n = padding <> base
     base = T.pack $ show n
     padding = T.replicate (max 0 (minBuildNumberLength - T.length base)) "0"
 
-runBuild :: FilePath -> FilePath -> MVar Integer -> IO ()
-runBuild builder outputDir var = do
+runBuild :: FilePath -> FilePath -> FilePath -> MVar Integer -> IO ()
+runBuild builder outputDir summaryFile var = do
   buildNumber <- takeMVar var
   let numText = formatBuildNumber buildNumber
-  let metaFile = outputDir </> (fromText numText <.> "json")
+  let metaFileName = fromText numText <.> "json"
+  let metaFile = outputDir </> metaFileName
   let stdOutFile = outputDir </> (fromText (numText <> "-out") <.> "txt")
   let stdErrFile = outputDir </> (fromText (numText <> "-err") <.> "txt")
   startTime <- getCurrentTime
@@ -98,6 +99,9 @@ runBuild builder outputDir var = do
   let metaFileJSON = makeMetaFile startTime endTime result
   let metaFileBytes = encodeUtf8 . T.pack . encodeStrict $ metaFileJSON
   writeFile metaFile metaFileBytes
+  let summaryFileJSON = toJSObject [("latest", toText metaFileName)]
+  let summaryFileBytes = encodeUtf8 . T.pack . encodeStrict $ summaryFileJSON
+  writeFile summaryFile summaryFileBytes
   putMVar var $ buildNumber + 1
 
 runSlave :: Build -> IO ()
@@ -107,7 +111,8 @@ runSlave Build{..} = do
   when needSource $ getSource buildSource buildWorkDir
   buildVar <- listDirectory buildWorkDir >>= (getFirstBuildNumber >>> newMVar)
   setWorkingDirectory buildWorkDir
-  let doBuild = runBuild buildBuilder buildOutputDir buildVar
+  let summaryFile = buildOutputDir </> "index.json"
+  let doBuild = runBuild buildBuilder buildOutputDir summaryFile buildVar
   when needSource doBuild
   forever $ do
     wait buildPollInterval
