@@ -2,9 +2,13 @@
 TODO
 ====
 
-Restart workers that die
+Okay, maybe processes are annoying
 
-Handle the TERM signal by terminating all workers, waiting for them, and then exiting
+  We could use threads with the named pipe command channel thing
+
+  But then it seems silly not to have an HTTP command channel instead
+
+  And then it might as well serve the JSON, too
 
 Tests!
 
