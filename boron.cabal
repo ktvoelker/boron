@@ -13,6 +13,8 @@ bug-reports:    mailto:boron@karlv.net
 synopsis:       A simple build server
 category:       Prelude
 tested-with:    GHC == 7.6.3
+data-files:
+  ui/index.html
 
 Executable boron
   default-language: Haskell2010

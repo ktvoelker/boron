@@ -1,6 +1,8 @@
 {
   "output": "./output",
   "work": "./work",
+  "web-port": 8015,
+  "web-ui": "ui",
   "builds": {
     "foo": {
       "source": "git://github.com/ktvoelker/boron.git",

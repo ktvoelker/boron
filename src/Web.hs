@@ -1,33 +1,40 @@
 
 module Web
-  ( runWeb
+  ( WebConfig(..)
+  , runWeb
+  , forkWeb
   ) where
 
-import Control.Concurrent.Chan
+import Control.Concurrent
 import Data.Monoid
 import qualified Data.Text as T
 import Filesystem.Path.CurrentOS
 import Network.HTTP.Types
 import Network.Wai
-import qualified Network.Wai.Application.Static as Stat
-import qualified Network.Wai.Handler.Warp as Warp
+import Network.Wai.Application.Static
+import Network.Wai.Handler.Warp
 import Prelude hiding (FilePath)
 
 import Command
+import Util
 
 data WebConfig =
   WebConfig
   { webPort       :: Int
   , webStaticRoot :: FilePath
+  , webUiRoot     :: FilePath
   , webBuildNames :: [T.Text]
   } deriving (Eq, Show)
 
-staticApp :: FilePath -> Application
-staticApp = Stat.staticApp . Stat.defaultFileServerSettings
+fileApp :: FilePath -> Application
+fileApp =
+  staticApp
+  . (\ss -> ss { ssLookupFile = ssLookupFile ss . drop 1})
+  . defaultFileServerSettings
 
-settings :: Int -> Warp.Settings
-settings port = Warp.defaultSettings
-  { Warp.settingsPort = port
+settings :: Int -> Settings
+settings port = defaultSettings
+  { settingsPort = port
   }
 
 buildCommands :: [(T.Text, BuildCommand)]
@@ -51,11 +58,19 @@ controlApp buildNames chan req = case pathInfo req of
       return $ emptyResponse accepted202
   _ -> return notFound
 
-routerApp :: Application -> Application -> Application
-routerApp static control req = case pathInfo req of
-  ("output" : _)  ->
+routerApp :: Application -> Application -> Application -> Application
+routerApp ui output control req = case pathInfo req of
+  [] ->
     if requestMethod req == methodGet
-    then static req
+    then ui (req { pathInfo = ["ui", "index.html"] })
+    else return methodNotAllowed
+  ("ui" : _) ->
+    if requestMethod req == methodGet
+    then ui req
+    else return methodNotAllowed
+  ("output" : _) ->
+    if requestMethod req == methodGet
+    then output req
     else return methodNotAllowed
   ("control" : _) ->
     if requestMethod req == methodPost
@@ -63,10 +78,17 @@ routerApp static control req = case pathInfo req of
     else return methodNotAllowed
   _ -> return notFound
 
-runWeb :: WebConfig -> IO (Chan Command)
-runWeb WebConfig{..} = do
+runWeb :: WebConfig -> Chan Command -> IO ()
+runWeb WebConfig{..} chan =
+  runSettings (settings webPort)
+    $ routerApp
+      (fileApp $ traceValue webUiRoot)
+      (fileApp webStaticRoot)
+      (controlApp webBuildNames chan)
+
+forkWeb :: WebConfig -> IO (Chan Command, ThreadId)
+forkWeb config = do
   chan <- newChan
-  Warp.runSettings (settings webPort)
-    $ routerApp (staticApp webStaticRoot) (controlApp webBuildNames chan)
-  return chan
+  tid  <- forkIO $ runWeb config chan
+  return (chan, tid)
 

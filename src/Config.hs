@@ -29,6 +29,8 @@ data Config =
   Config
   { configOutputDir  :: FilePath
   , configWorkDir    :: FilePath
+  , configWebPort    :: Int
+  , configWebUi      :: Maybe FilePath
   , configBuilds     :: [Build]
   } deriving (Show)
 
@@ -69,10 +71,12 @@ absolutize root rel = collapse $ root </> rel
 
 readConfig :: FilePath -> JSReader Config
 readConfig root (JSObject obj) = do
-  output <- absolutize root <$> valFromObj "output" obj
-  work   <- absolutize root <$> valFromObj "work" obj
-  builds <- valFromObj "builds" obj >>= readBuilds output work
-  return $ Config output work builds
+  output  <- absolutize root <$> valFromObj "output" obj
+  work    <- absolutize root <$> valFromObj "work" obj
+  webPort <- valFromObj "web-port" obj
+  webUi   <- (Just <$> valFromObj "web-ui" obj) <|> pure Nothing
+  builds  <- valFromObj "builds" obj >>= readBuilds output work
+  return $ Config output work webPort webUi builds
 readConfig _ _ = Error "A config must be a JSON object"
 
 parseConfig :: FilePath -> IO Config

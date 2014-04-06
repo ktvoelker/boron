@@ -2,11 +2,5 @@
 TODO
 ====
 
-Change the slaves to run in threads, not processes
-
-Add a config option for the web port
-
-Start a web thread from the master
-
 Tests!
 
