@@ -38,6 +38,8 @@ Executable boron
     system-filepath      >= 0.4  && < 0.5,
     system-fileio        >= 0.3  && < 0.4,
     json                 >= 0.7  && < 0.8,
+    http-types           >= 0.8  && < 0.9,
+    wai                  >= 2.0  && < 2.1,
     wai-app-static       >= 2.0  && < 2.1,
     warp                 >= 2.0  && < 2.1
   default-extensions:

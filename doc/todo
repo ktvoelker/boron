@@ -2,13 +2,11 @@
 TODO
 ====
 
-Okay, maybe processes are annoying
+Change the slaves to run in threads, not processes
 
-  We could use threads with the named pipe command channel thing
+Add a config option for the web port
 
-  But then it seems silly not to have an HTTP command channel instead
-
-  And then it might as well serve the JSON, too
+Start a web thread from the master
 
 Tests!
 

@@ -12,6 +12,7 @@ import Text.JSON
 import Config
 import Slave
 import Util
+import Web ()
 
 masterFileName :: FilePath
 masterFileName = fromText "builds.json"
