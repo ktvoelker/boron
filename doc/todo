@@ -2,5 +2,12 @@
 TODO
 ====
 
+Add styling to the web interface
+
+  Use a columnar view, where the current view in column N+1 corresponds to the
+  selected entry in column N
+
+Update the URL fragment when navigating in the web app, and add to the history
+
 Tests!
 

@@ -6,6 +6,7 @@ import Control.Concurrent
 import Control.Monad
 import Data.Char
 import Data.Functor
+import Data.Maybe
 import Data.Monoid
 import qualified Data.Text as T
 import Data.Text.Encoding
@@ -44,12 +45,34 @@ wait = threadDelay . round . (* microsecondsPerSecond) . toRational
 runPoll :: FilePath -> FilePath -> IO Bool
 runPoll wd fp = (/= ExitSuccess) <$> run (Just wd) (encodeString fp) []
 
-getFirstBuildNumber :: [FilePath] -> Integer
-getFirstBuildNumber = (+ 1) . maximum . (0 :) . map f
+isMetaFile :: FilePath -> Bool
+isMetaFile = isJust . buildNumber
+
+metaFiles :: [FilePath] -> [FilePath]
+metaFiles = filter isMetaFile
+
+buildNumbers :: [FilePath] -> [Integer]
+buildNumbers = catMaybes . map buildNumber
+
+buildNumber :: FilePath -> Maybe Integer
+buildNumber fp =
+  if extensions fp == ["json"] && all isDigit bn
+  then Just $ read bn
+  else Nothing
   where
-    f fp = if extensions fp == ["json"] && all isDigit bn then read bn else 0
-      where
-        bn = encodeString $ basename fp
+    bn = encodeString $ basename fp
+
+firstBuildNumber :: [FilePath] -> Integer
+firstBuildNumber = (+ 1) . maximum . (0 :) . buildNumbers
+
+getMetaFiles :: FilePath -> IO [FilePath]
+getMetaFiles = fmap metaFiles . listDirectory
+
+getBuildNumbers :: FilePath -> IO [Integer]
+getBuildNumbers = fmap buildNumbers . listDirectory
+
+getFirstBuildNumber :: FilePath -> IO Integer
+getFirstBuildNumber = fmap firstBuildNumber . listDirectory
 
 timeToJSValue :: UTCTime -> JSValue
 timeToJSValue = showJSON . show
@@ -76,6 +99,9 @@ formatBuildNumber n = padding <> base
     base = T.pack $ show n
     padding = T.replicate (max 0 (minBuildNumberLength - T.length base)) "0"
 
+makeSummaryFile :: [FilePath] -> JSValue
+makeSummaryFile = showJSONs . map (encodeString . filename)
+
 runBuild :: FilePath -> FilePath -> FilePath -> FilePath -> MVar Integer -> IO ()
 runBuild wd builder outputDir summaryFile var = do
   buildNumber <- takeMVar var
@@ -100,7 +126,7 @@ runBuild wd builder outputDir summaryFile var = do
   let metaFileJSON = makeMetaFile startTime endTime result
   let metaFileBytes = encodeUtf8 . T.pack . encodeStrict $ metaFileJSON
   writeFile metaFile metaFileBytes
-  let summaryFileJSON = toJSObject [("latest", toText metaFileName)]
+  summaryFileJSON <- makeSummaryFile <$> getMetaFiles outputDir
   let summaryFileBytes = encodeUtf8 . T.pack . encodeStrict $ summaryFileJSON
   writeFile summaryFile summaryFileBytes
   putMVar var $ buildNumber + 1
@@ -108,12 +134,11 @@ runBuild wd builder outputDir summaryFile var = do
 runSlave :: Build -> IO ()
 runSlave Build{..} = do
   ensureDirectory buildOutputDir
-  buildVar <- listDirectory buildOutputDir >>= (getFirstBuildNumber >>> newMVar)
+  buildVar <- getFirstBuildNumber buildOutputDir >>= newMVar
   needSource <- not <$> isDirectory buildWorkDir
   when needSource $ getSource buildSource buildWorkDir
   let summaryFile = buildOutputDir </> "index.json"
   let doBuild = runBuild buildWorkDir buildBuilder buildOutputDir summaryFile buildVar
-  when needSource doBuild
   forever $ do
     wait buildPollInterval
     shouldBuild <- runPoll buildWorkDir buildPoller

@@ -1,0 +1,6 @@
+[submodule "ui/ext/requirejs"]
+	path = ui/ext/requirejs
+	url = github:jrburke/requirejs.git
+[submodule "ui/ext/reqwest"]
+	path = ui/ext/reqwest
+	url = github:ded/reqwest.git

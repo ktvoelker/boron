@@ -1,7 +1,30 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <title>Boron Build Server</title>
+    <link href="/ui/style.css" type="text/css" rel="stylesheet" />
   </head>
   <body>
+    <h1>Boron Build Server</h1>
+    <div id="builds"></div>
+    <div id="templates">
+      <div class="build">
+        <h2 class="build--name"></h2>
+        <ul class="build--runs"></ul>
+      </div>
+      <div class="run">
+        <h3><button class="run--number"></button></h3>
+      </div>
+      <dl class="run--detail">
+        <dt>Started</dt>
+        <dd class="run--start"></dd>
+        <dt>Ended</dt>
+        <dd class="run--end"></dd>
+        <dt>Result</dt>
+        <dd class="run--result"></dd>
+      </dl>
+    </div>
+    <script src="/ui/ext/requirejs/require.js"></script>
+    <script src="/ui/main.js"></script>
   </body>
 </html>
