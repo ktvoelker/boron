@@ -5,25 +5,34 @@
     <link href="/ui/style.css" type="text/css" rel="stylesheet" />
   </head>
   <body>
-    <h1>Boron Build Server</h1>
-    <div id="builds"></div>
-    <div id="templates">
-      <div class="build">
-        <h2 class="build--name"></h2>
-        <ul class="build--runs"></ul>
-      </div>
-      <div class="run">
-        <h3><button class="run--number"></button></h3>
-      </div>
-      <dl class="run--detail">
+    <h1><a href='#/'>Boron Build Server</a></h1>
+    <div class="column-1">
+      <ul id="builds"></ul>
+    </div>
+    <div class="column-1">
+      <ul id="numbers"></ul>
+    </div>
+    <div class="column-3">
+      <dl id="detail">
         <dt>Started</dt>
-        <dd class="run--start"></dd>
+        <dd id="detail--start"></dd>
         <dt>Ended</dt>
-        <dd class="run--end"></dd>
+        <dd id="detail--end"></dd>
         <dt>Result</dt>
-        <dd class="run--result"></dd>
+        <dd id="detail--result"></dd>
       </dl>
     </div>
+    <div id="templates">
+      <ul>
+        <li class="build">
+          <button class="build--click build--name"></button>
+        </li>
+        <li class="number">
+          <button class="number--click number--number"></button>
+        </li>
+      </ul>
+    </div>
+    <script src="/ui/ext/pathjs/path.js"></script>
     <script src="/ui/ext/requirejs/require.js"></script>
     <script src="/ui/main.js"></script>
   </body>

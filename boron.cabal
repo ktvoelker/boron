@@ -18,6 +18,7 @@ data-files:
   ui/style.css
   ui/main.js
   ui/dom.js
+  ui/ext/pathjs/path.js
   ui/ext/requirejs/requirejs.js
   ui/ext/reqwest/reqwest.js
 

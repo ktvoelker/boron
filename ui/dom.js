@@ -60,12 +60,20 @@ define('ui/dom', [], function() {
     };
   }
 
+  function clear(elem) {
+    if (!elem instanceof HTMLElement) {
+      elem = one(elem);
+    }
+    elem.innerHTML = '';
+  }
+
   return {
     all: all,
     one: one,
     clone: clone,
     toggle: toggle,
-    templates: templates
+    templates: templates,
+    clear: clear
   };
 
 });
