@@ -63,9 +63,35 @@ require(['ui/dom', 'ui/ext/reqwest/reqwest'], function(dom, reqwest) {
   }
 
   Path.map('#/build/:build').to(function() {
-    detailElem.style.display = 'none';
-    updateNumbers(this.params.build);
     updateBuilds();
+    updateNumbers(this.params.build);
+    detailElem.style.display = 'none';
+  });
+
+  var currentNumber = null;
+
+  function updateDetail(build, number) {
+    if (number === currentNumber) {
+      return;
+    }
+    currentNumber = null;
+    detailElem.style.display = 'none';
+    reqwest('/output/' + build + '/' + number, function(detail) {
+      dom.one('#detail--result').innerText =
+        detail.ok ? 'Pass' : 'Fail (' + detail.code + ')';
+      dom.one('#detail--elapsed').innerText =
+        (new Date(detail.end) - new Date(detail.start)) + ' ms';
+      dom.one('#detail--start').innerText = detail.start;
+      dom.one('#detail--end').innerText = detail.end;
+      detailElem.style.display = 'block';
+    });
+    currentNumber = number;
+  }
+
+  Path.map('#/build/:build/:number').to(function() {
+    updateBuilds();
+    updateNumbers(this.params.build);
+    updateDetail(this.params.build, this.params.number);
   });
 
   Path.root('#/');
