@@ -3,3 +3,44 @@
   display: none;
 }
 
+.columns {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+}
+
+.column {
+  margin: 0 0 0 20px;
+}
+
+.column:first-child {
+  margin-left: 0;
+}
+
+#builds, #numbers {
+  width: 200px;
+  list-style-type: none;
+}
+
+.button-list {
+  -webkit-user-select: none;
+}
+
+.button-list > li {
+  margin: 0;
+  padding: 0;
+}
+
+.button-list > li > button {
+  width: 100%;
+  height: 100%;
+  background: none;
+  border: none;
+  padding: 10px;
+  font-size: 12pt;
+}
+
+#detail {
+  width: 400px;
+  font-size: 12pt;
+}
+

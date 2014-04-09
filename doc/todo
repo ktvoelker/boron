@@ -2,7 +2,13 @@
 TODO
 ====
 
-Add styling to the web interface
+Update styling to work with radio buttons
+  
+  Hide the radio buttons themselves
+
+  Color the label based on the selected state of the radio button
+
+Set the initial selected state of the radio buttons on load
 
 Tests!
 

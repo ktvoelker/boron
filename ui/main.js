@@ -18,10 +18,14 @@ require(['ui/dom', 'ui/ext/reqwest/reqwest'], function(dom, reqwest) {
     reqwest('/output/builds.json', function(builds) {
       builds.forEach(function(build) {
         var buildElem = template('.build', {'.build--name': build});
-        buildsElem.appendChild(buildElem);
+        var id = 'x--build--' + build;
+        var inputElem = dom.one('.build--click', buildElem);
+        inputElem.setAttribute('id', id);
+        dom.one('.build--name', buildElem).setAttribute('for', id);
         dom.one('.build--click', buildElem).addEventListener('click', function() {
           window.location.hash = '#/build/' + build;
         });
+        buildsElem.appendChild(buildElem);
       });
       buildsElem.style.display = 'block';
     });
@@ -43,7 +47,9 @@ require(['ui/dom', 'ui/ext/reqwest/reqwest'], function(dom, reqwest) {
   }
 
   function updateNumbers(build) {
+    updateBuilds();
     if (currentNumbers == build) {
+      numbersElem.style.display = 'block';
       return;
     }
     currentNumbers = null;
@@ -52,6 +58,10 @@ require(['ui/dom', 'ui/ext/reqwest/reqwest'], function(dom, reqwest) {
     reqwest('/output/' + build + '/index.json', function(index) {
       forEachReversed(index, function(number) {
         var numberElem = template('.number', {'.number--number': number});
+        var id = 'x--number--' + build + '--' + number;
+        var inputElem = dom.one('.number--click', numberElem);
+        inputElem.setAttribute('id', id);
+        dom.one('.number--number', numberElem).setAttribute('for', id);
         numbersElem.appendChild(numberElem);
         dom.one('.number--click', numberElem).addEventListener('click', function() {
           window.location.hash = '#/build/' + build + '/' + number;
@@ -63,7 +73,6 @@ require(['ui/dom', 'ui/ext/reqwest/reqwest'], function(dom, reqwest) {
   }
 
   Path.map('#/build/:build').to(function() {
-    updateBuilds();
     updateNumbers(this.params.build);
     detailElem.style.display = 'none';
   });
@@ -71,7 +80,9 @@ require(['ui/dom', 'ui/ext/reqwest/reqwest'], function(dom, reqwest) {
   var currentNumber = null;
 
   function updateDetail(build, number) {
+    updateNumbers(build);
     if (number === currentNumber) {
+      detailElem.style.display = 'block';
       return;
     }
     currentNumber = null;
@@ -89,8 +100,6 @@ require(['ui/dom', 'ui/ext/reqwest/reqwest'], function(dom, reqwest) {
   }
 
   Path.map('#/build/:build/:number').to(function() {
-    updateBuilds();
-    updateNumbers(this.params.build);
     updateDetail(this.params.build, this.params.number);
   });
 
