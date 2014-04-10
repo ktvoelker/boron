@@ -8,8 +8,16 @@ require(['ui/dom', 'ui/ext/reqwest/reqwest'], function(dom, reqwest) {
 
   var buildsNeedUpdating = true;
 
-  function updateBuilds() {
+  function checkBuild(build) {
+    if (build !== null) {
+      dom.one('#x--build--' + build).checked = true;
+    }
+  }
+
+  function updateBuilds(currentBuild) {
     if (!buildsNeedUpdating) {
+      checkBuild(currentBuild);
+      buildsElem.style.display = 'block';
       return;
     }
     buildsNeedUpdating = true;
@@ -23,10 +31,14 @@ require(['ui/dom', 'ui/ext/reqwest/reqwest'], function(dom, reqwest) {
         inputElem.setAttribute('id', id);
         dom.one('.build--name', buildElem).setAttribute('for', id);
         dom.one('.build--click', buildElem).addEventListener('click', function() {
-          window.location.hash = '#/build/' + build;
+          hash = '#/build/' + build;
+          if (hash != window.location.hash) {
+            window.location.hash = hash;
+          }
         });
         buildsElem.appendChild(buildElem);
       });
+      checkBuild(currentBuild);
       buildsElem.style.display = 'block';
     });
     buildsNeedUpdating = false;
@@ -35,7 +47,7 @@ require(['ui/dom', 'ui/ext/reqwest/reqwest'], function(dom, reqwest) {
   Path.map('#/').to(function() {
     numbersElem.style.display = 'none';
     detailElem.style.display = 'none';
-    updateBuilds();
+    updateBuilds(null);
   });
 
   var currentNumbers = null;
@@ -46,9 +58,16 @@ require(['ui/dom', 'ui/ext/reqwest/reqwest'], function(dom, reqwest) {
     }
   }
 
-  function updateNumbers(build) {
-    updateBuilds();
+  function checkNumber(build, number) {
+    if (number !== null) {
+      dom.one('#x--number--' + build + '--' + number).checked = true;
+    }
+  }
+
+  function updateNumbers(build, currentNumber) {
+    updateBuilds(build);
     if (currentNumbers == build) {
+      checkNumber(build, currentNumber);
       numbersElem.style.display = 'block';
       return;
     }
@@ -63,24 +82,28 @@ require(['ui/dom', 'ui/ext/reqwest/reqwest'], function(dom, reqwest) {
         inputElem.setAttribute('id', id);
         dom.one('.number--number', numberElem).setAttribute('for', id);
         numbersElem.appendChild(numberElem);
-        dom.one('.number--click', numberElem).addEventListener('click', function() {
-          window.location.hash = '#/build/' + build + '/' + number;
+        dom.one('.number--click', numberElem).addEventListener('change', function() {
+          hash = '#/build/' + build + '/' + number;
+          if (hash != window.location.hash) {
+            window.location.hash = hash;
+          }
         });
       });
+      checkNumber(build, currentNumber);
       numbersElem.style.display = 'block';
     });
     currentNumbers = build;
   }
 
   Path.map('#/build/:build').to(function() {
-    updateNumbers(this.params.build);
+    updateNumbers(this.params.build, null);
     detailElem.style.display = 'none';
   });
 
   var currentNumber = null;
 
   function updateDetail(build, number) {
-    updateNumbers(build);
+    updateNumbers(build, number);
     if (number === currentNumber) {
       detailElem.style.display = 'block';
       return;

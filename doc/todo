@@ -2,13 +2,16 @@
 TODO
 ====
 
-Update styling to work with radio buttons
-  
-  Hide the radio buttons themselves
+See what needs to be done to support more concurrent connections
 
-  Color the label based on the selected state of the radio button
+  Chrome appears to hit the limit during the initial load sometimes
 
-Set the initial selected state of the radio buttons on load
+Display nice build numbers
+
+Display pass/fail and start time in the numbers list
+
+Write a numbered file with just the start time when starting a build, and add it to
+the index at that time
 
 Tests!
 

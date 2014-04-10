@@ -1,4 +1,14 @@
 
+body {
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+}
+
 #builds, #numbers, #detail, #templates {
   display: none;
 }
@@ -9,11 +19,11 @@
 }
 
 .column {
-  margin: 0 0 0 20px;
+  padding: 0 0 0 20px;
 }
 
 .column:first-child {
-  margin-left: 0;
+  padding-left: 0;
 }
 
 #builds, #numbers {
@@ -30,13 +40,21 @@
   padding: 0;
 }
 
-.button-list > li > button {
-  width: 100%;
-  height: 100%;
+.button-list > li > input {
+  display: none;
+}
+
+.button-list > li > input:checked + label {
+  background-color: #BBB;
+}
+
+.button-list > li > label {
+  display: inline-block;
+  width: 180px;
   background: none;
   border: none;
-  padding: 10px;
   font-size: 12pt;
+  padding: 10px;
 }
 
 #detail {
