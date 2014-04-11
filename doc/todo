@@ -2,16 +2,11 @@
 TODO
 ====
 
-See what needs to be done to support more concurrent connections
+Display nice build numbers, pass/fail, and start time in the numbers list
 
-  Chrome appears to hit the limit during the initial load sometimes
+Clean up the JS code with model and view classes and promises
 
-Display nice build numbers
-
-Display pass/fail and start time in the numbers list
-
-Write a numbered file with just the start time when starting a build, and add it to
-the index at that time
+Fix the missing base path in the directory indices
 
 Tests!
 

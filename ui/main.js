@@ -111,12 +111,18 @@ require(['ui/dom', 'ui/ext/reqwest/reqwest'], function(dom, reqwest) {
     currentNumber = null;
     detailElem.style.display = 'none';
     reqwest('/output/' + build + '/' + number, function(detail) {
+      dom.one('#detail--number').innerText = number;
       dom.one('#detail--result').innerText =
-        detail.ok ? 'Pass' : 'Fail (' + detail.code + ')';
-      dom.one('#detail--elapsed').innerText =
-        (new Date(detail.end) - new Date(detail.start)) + ' ms';
+        detail.status + ('code' in detail ? ' (' + detail.code + ')' : '');
       dom.one('#detail--start').innerText = detail.start;
-      dom.one('#detail--end').innerText = detail.end;
+      if ('end' in detail) {
+        dom.one('#detail--elapsed').innerText =
+          (new Date(detail.end) - new Date(detail.start)) + ' ms';
+        dom.one('#detail--end').innerText = detail.end;
+      } else {
+        dom.one('#detail--elapsed').innerText = '';
+        dom.one('#detail--end').innerText = '';
+      }
       detailElem.style.display = 'block';
     });
     currentNumber = number;

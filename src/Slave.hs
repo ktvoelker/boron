@@ -77,18 +77,27 @@ getFirstBuildNumber = fmap firstBuildNumber . listDirectory
 timeToJSValue :: UTCTime -> JSValue
 timeToJSValue = showJSON . show
 
-makeMetaFile :: UTCTime -> UTCTime -> ExitCode -> JSObject JSValue
-makeMetaFile startTime endTime result =
+makeRunningMetaFile :: Integer -> UTCTime -> JSObject JSValue
+makeRunningMetaFile num startTime =
   toJSObject
-    [ ("start", timeToJSValue startTime)
-    , ("end", timeToJSValue endTime)
-    , ("ok", showJSON $ result == ExitSuccess)
-    , ("code", code)
+    [ ("number", showJSON num)
+    , ("start", timeToJSValue startTime)
+    , ("status", showJSON ("running" :: T.Text))
     ]
+
+makeMetaFile :: Integer -> UTCTime -> UTCTime -> ExitCode -> JSObject JSValue
+makeMetaFile num startTime endTime result =
+  toJSObject
+  $ [ ("number", showJSON num)
+    , ("start", timeToJSValue startTime)
+    , ("end", timeToJSValue endTime)
+    , ("status", showJSON $ if result == ExitSuccess then "pass" :: T.Text else "fail")
+    ]
+  ++ code
   where
     code = case result of
-      ExitSuccess -> JSNull
-      ExitFailure code -> showJSON code
+      ExitSuccess -> []
+      ExitFailure code -> [("code", showJSON code)]
 
 minBuildNumberLength :: Int
 minBuildNumberLength = 5
@@ -111,6 +120,12 @@ runBuild wd builder outputDir summaryFile var = do
   let stdOutFile = outputDir </> (fromText (numText <> "-out") <.> "txt")
   let stdErrFile = outputDir </> (fromText (numText <> "-err") <.> "txt")
   startTime <- getCurrentTime
+  let metaFileJSON = makeRunningMetaFile buildNumber startTime
+  let metaFileBytes = encodeUtf8 . T.pack . encodeStrict $ metaFileJSON
+  writeFile metaFile metaFileBytes
+  summaryFileJSON <- makeSummaryFile <$> getMetaFiles outputDir
+  let summaryFileBytes = encodeUtf8 . T.pack . encodeStrict $ summaryFileJSON
+  writeFile summaryFile summaryFileBytes
   -- Work around for https://ghc.haskell.org/trac/ghc/ticket/8448
   let emptyList = [] :: [String]
   result <-
@@ -123,12 +138,9 @@ runBuild wd builder outputDir summaryFile var = do
           }
         waitForProcess p
   endTime <- getCurrentTime
-  let metaFileJSON = makeMetaFile startTime endTime result
+  let metaFileJSON = makeMetaFile buildNumber startTime endTime result
   let metaFileBytes = encodeUtf8 . T.pack . encodeStrict $ metaFileJSON
   writeFile metaFile metaFileBytes
-  summaryFileJSON <- makeSummaryFile <$> getMetaFiles outputDir
-  let summaryFileBytes = encodeUtf8 . T.pack . encodeStrict $ summaryFileJSON
-  writeFile summaryFile summaryFileBytes
   putMVar var $ buildNumber + 1
 
 runSlave :: Build -> IO ()
