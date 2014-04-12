@@ -45,11 +45,8 @@ require(['dom', 'path', 'reqwest'], function(dom, router, reqwest) {
         var inputElem = dom.one('.build--click', buildElem);
         inputElem.setAttribute('id', id);
         dom.one('.build--name', buildElem).setAttribute('for', id);
-        dom.one('.build--click', buildElem).addEventListener('click', function() {
+        dom.one('.build--click', buildElem).addEventListener('change', function() {
           hash = '#/build/' + build;
-          if (hash != window.location.hash) {
-            window.location.hash = hash;
-          }
         });
         buildsElem.appendChild(buildElem);
       });
@@ -99,9 +96,6 @@ require(['dom', 'path', 'reqwest'], function(dom, router, reqwest) {
         numbersElem.appendChild(numberElem);
         dom.one('.number--click', numberElem).addEventListener('change', function() {
           hash = '#/build/' + build + '/' + number;
-          if (hash != window.location.hash) {
-            window.location.hash = hash;
-          }
         });
       });
       checkNumber(build, currentNumber);

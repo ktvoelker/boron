@@ -23,7 +23,25 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
     });
   };
 
+  var formatTime = function(dt) {
+    return dt.toLocaleString();
+  };
+
+  var formatRunFacts = function() {
+    var formatted = {}:
+    formatted.status = this.status[0].toLocaleUpperCase() + this.status.substring(1);
+    formatted.status_verbose = formatted.status;
+    if (this.status == 'fail') {
+      formatted.status_verbose += ' (' + this.code + ')';
+    }
+    formatted.elapsed = this.elapsed + ' ms';
+    formatted.start = formatTime(this.start);
+    formatted.end = this.end == null ? 'Not yet' : formatTime(this.end);
+    this.formatted = formatted;
+  }
+
   var initRun = function(details) {
+    this.number = details.number;
     this.status = details.status;
     this.code = details.code;
     this.start = maybeTime(details.start);
@@ -33,6 +51,7 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
     } else {
       this.elapsed = this.end - this.start;
     }
+    formatRunFacts.call(this);
   };
 
   var Run = classy.Class({

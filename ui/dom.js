@@ -1,6 +1,22 @@
 
 define('dom', [], function() {
 
+  var idCounter = 0;
+
+  function genId() {
+    return 'gen-' + idCounter++;
+  }
+
+  function create(tag, attrs) {
+    var elem = document.createElement(tag);
+    if (attrs !== null) {
+      for (key in attrs) {
+        elem.setAttribute(key, attrs[key]);
+      }
+    }
+    return elem;
+  }
+
   function all(thing, root) {
     if (thing instanceof Array) {
       return thing;
@@ -68,6 +84,7 @@ define('dom', [], function() {
   }
 
   return {
+    create: create,
     all: all,
     one: one,
     clone: clone,
