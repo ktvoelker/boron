@@ -1,5 +1,5 @@
 
-define('ui/dom', [], function() {
+define('dom', [], function() {
 
   function all(thing, root) {
     if (thing instanceof Array) {

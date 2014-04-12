@@ -18,7 +18,9 @@ data-files:
   ui/style.css
   ui/main.js
   ui/dom.js
+  ui/ext/classyjs/src/classy.js
   ui/ext/pathjs/path.js
+  ui/ext/q/q.js
   ui/ext/requirejs/require.js
   ui/ext/reqwest/reqwest.js
 

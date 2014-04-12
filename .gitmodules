@@ -7,3 +7,12 @@
 [submodule "ui/ext/pathjs"]
 	path = ui/ext/pathjs
 	url = github:mtrpcic/pathjs.git
+[submodule "ui/ext/classyjs"]
+	path = ui/ext/classyjs
+	url = github:foo123/classy.js.git
+[submodule "ui/ext/p"]
+	path = ui/ext/p
+	url = github:evandrolg/p.git
+[submodule "ui/ext/q"]
+	path = ui/ext/q
+	url = github:kriskowal/q.git

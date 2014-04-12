@@ -1,5 +1,20 @@
 
-require(['ui/dom', 'ui/ext/reqwest/reqwest'], function(dom, reqwest) {
+require.config({
+  baseUrl: '/ui',
+  paths: {
+    'classy': 'ext/classy/src/classy',
+    'path': 'ext/pathjs/path',
+    'q': 'ext/q/q',
+    'reqwest': 'ext/reqwest/reqwest'
+  },
+  shim: {
+    'path': {
+      exports: 'Path'
+    }
+  }
+});
+
+require(['dom', 'path', 'reqwest'], function(dom, router, reqwest) {
 
   var template = dom.templates('#templates');
   var buildsElem = dom.one('#builds');
@@ -44,7 +59,7 @@ require(['ui/dom', 'ui/ext/reqwest/reqwest'], function(dom, reqwest) {
     buildsNeedUpdating = false;
   }
 
-  Path.map('#/').to(function() {
+  router.map('#/').to(function() {
     numbersElem.style.display = 'none';
     detailElem.style.display = 'none';
     updateBuilds(null);
@@ -95,7 +110,7 @@ require(['ui/dom', 'ui/ext/reqwest/reqwest'], function(dom, reqwest) {
     currentNumbers = build;
   }
 
-  Path.map('#/build/:build').to(function() {
+  router.map('#/build/:build').to(function() {
     updateNumbers(this.params.build, null);
     detailElem.style.display = 'none';
   });
@@ -128,15 +143,15 @@ require(['ui/dom', 'ui/ext/reqwest/reqwest'], function(dom, reqwest) {
     currentNumber = number;
   }
 
-  Path.map('#/build/:build/:number').to(function() {
+  router.map('#/build/:build/:number').to(function() {
     updateDetail(this.params.build, this.params.number);
   });
 
-  Path.root('#/');
-  Path.rescue(function() {
+  router.root('#/');
+  router.rescue(function() {
     console.error('Unknown URL');
   });
-  Path.listen();
+  router.listen();
 
 });
 

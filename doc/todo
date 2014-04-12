@@ -2,9 +2,9 @@
 TODO
 ====
 
-Display nice build numbers, pass/fail, and start time in the numbers list
-
 Clean up the JS code with model and view classes and promises
+
+Display nice build numbers, pass/fail, and start time in the numbers list
 
 Fix the missing base path in the directory indices
 
