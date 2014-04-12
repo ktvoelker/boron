@@ -12,12 +12,15 @@ stability:      experimental
 bug-reports:    mailto:boron@karlv.net
 synopsis:       A simple build server
 category:       Prelude
-tested-with:    GHC == 7.6.3
+tested-with:    GHC == 7.6.3, GHC == 7.8.1
 data-files:
   ui/index.html
   ui/style.css
   ui/main.js
   ui/dom.js
+  ui/router.js
+  ui/views.js
+  ui/api.js
   ui/ext/classyjs/src/classy.js
   ui/ext/pathjs/path.js
   ui/ext/q/q.js
@@ -41,17 +44,17 @@ Executable boron
     base                 >= 4    && < 5,
     unordered-containers >= 0.2  && < 0.3,
     text                 >= 0.11 && < 0.12,
-    unix                 >= 2.6  && < 2.7,
-    process              >= 1.1  && < 1.2,
+    unix                 >= 2.6  && < 2.8,
+    process              >= 1.1  && < 1.3,
     ini                  >= 0.2  && < 0.3,
     time                 >= 1.4  && < 1.5,
     system-filepath      >= 0.4  && < 0.5,
     system-fileio        >= 0.3  && < 0.4,
     json                 >= 0.7  && < 0.8,
     http-types           >= 0.8  && < 0.9,
-    wai                  >= 2.0  && < 2.1,
+    wai                  >= 2.0  && < 2.2,
     wai-app-static       >= 2.0  && < 2.1,
-    warp                 >= 2.0  && < 2.1
+    warp                 >= 2.1  && < 2.2
   default-extensions:
     -- Syntactic extensions
     LambdaCase

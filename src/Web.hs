@@ -33,9 +33,7 @@ fileApp =
   . defaultFileServerSettings
 
 settings :: Int -> Settings
-settings port = defaultSettings
-  { settingsPort = port
-  }
+settings port = setPort port defaultSettings
 
 buildCommands :: [(T.Text, BuildCommand)]
 buildCommands = [("start", StartBuild), ("stop", StopBuild)]
