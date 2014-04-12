@@ -103,13 +103,10 @@ minBuildNumberLength :: Int
 minBuildNumberLength = 5
 
 formatBuildNumber :: Integer -> T.Text
-formatBuildNumber n = padding <> base
-  where
-    base = T.pack $ show n
-    padding = T.replicate (max 0 (minBuildNumberLength - T.length base)) "0"
+formatBuildNumber = T.pack . show
 
 makeSummaryFile :: [FilePath] -> JSValue
-makeSummaryFile = showJSONs . map (encodeString . filename)
+makeSummaryFile = showJSONs . map (encodeString . basename)
 
 runBuild :: FilePath -> FilePath -> FilePath -> FilePath -> MVar Integer -> IO ()
 runBuild wd builder outputDir summaryFile var = do

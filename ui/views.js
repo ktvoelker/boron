@@ -51,14 +51,22 @@ define('views', ['dom', 'classy'], function(dom, classy) {
   });
 
   var BuildButton = classy.Class({Extends: RadioButton}, {
-    constructor: function(build, selected) {
+    constructor: function(build, selected, selectedRun) {
       this.build = build;
+      this.selectedRun = selectedRun;
       this.$super('constructor', build.name, 'build', build.name, selected);
     },
     activate: function() {
       var target = dom.one('#parent-for-runs');
       this.build.getRuns().then(function(runs) {
-        var view = new List(runs.map(function(run) { return new RunButton(run); }));
+        var view = new List(runs.map(function(run) {
+          var selected = false;
+          if (this.selectedRun === run) {
+            this.selectedRun = null;
+            selected = true;
+          }
+          return new RunButton(run, selected);
+        }));
         view.render(target);
       });
     }
@@ -108,12 +116,39 @@ define('views', ['dom', 'classy'], function(dom, classy) {
     }
   });
 
+  var Boron = classy.Class({Extends: List}, {
+    constructor: function() {
+      this.parentForBuilds = dom.one('#parent-for-builds');
+      this.parentForRuns = dom.one('#parent-for-runs');
+      this.parentForDetail = dom.one('#parent-for-detail');
+    },
+    renderRoot: function(selectedBuild, selectedRun) {
+      dom.clear(this.parentForDetail);
+      dom.clear(this.parentForRuns);
+      dom.clear(this.parentForBuilds);
+      api.getBuilds().then(function(builds) {
+        var views = builds.map(function(build) {
+          return new BuildButton(build, build === selectedBuild, selectedRun);
+        });
+        var view = new List(views);
+        view.render();
+      });
+    },
+    renderBuild: function(build) {
+      this.renderRoot(build);
+    },
+    renderRun: function(run) {
+      this.renderRoot(run.build, run);
+    }
+  });
+
   return {
     List: List,
     RadioButton: RadioButton,
     BuildButton: BuildButton,
     RunButton: RunButton,
-    RunDetail: RunDetail
+    RunDetail: RunDetail,
+    Boron: Boron
   };
 
 });

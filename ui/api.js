@@ -55,6 +55,23 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
   };
 
   var Run = classy.Class({
+    __static__: {
+      cache: {},
+      lazyInstance: function(build, number) {
+        if (!(build.name in this.cache)) {
+          this.cache[build.name] = {};
+        }
+        if (!(number in this.cache[build.name])) {
+          this.cache[build.name][number] = new Lazy(function() {
+            var runUrl = '/output/' + build.name + '/' + number + '.json';
+            return get(runUrl, function(details) {
+              return new Run(build, runUrl, details);
+            });
+          });
+        }
+        return this.cache[build.name][number];
+      }
+    },
     constructor: function(build, url, details) {
       this.build = build;
       this.url = url;
@@ -87,7 +104,22 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
     }
   });
 
+  function forEachReversed(arr, fn) {
+    for (var i = arr.length - 1; i >= 0; --i) {
+      fn(arr[i]);
+    }
+  }
+
   var Build = classy.Class({
+    __static__: {
+      cache: {},
+      instance: function(name) {
+        if (!(name in this.cache)) {
+          this.cache[name] = new Build(name);
+        }
+        return this.cache[name];
+      }
+    },
     constructor: function(name) {
       this.name = name;
       this.url = '/output/' + name + '.json';
@@ -96,14 +128,9 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
     getRuns: function(skipCache) {
       var thisBuild = this;
       if (skipCache || this.runs === null) {
-        this.runs = get(this.url, true).then(function(runFiles) {
-          return runFiles.map(function(runFile) {
-            return new Lazy(function() {
-              var runUrl = '/output/' + thisBuild.name + '/' + runFile;
-              return get(runUrl, function(dets) {
-                return new Run(thisBuild, runUrl, dets);
-              });
-            });
+        this.runs = get(this.url, true).then(function(numbers) {
+          return numbers.map(function(number) {
+            return Run.lazyInstance(thisBuild, number);
           });
         });
       }
@@ -117,7 +144,7 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
     if (skipCache || builds === null) {
       builds = get('/output/builds.json').then(function(buildNames) {
         return buildNames.map(function(buildName) {
-          return new Build(buildName);
+          return Build.instance(buildName);
         });
       });
     }
