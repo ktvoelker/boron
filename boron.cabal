@@ -21,7 +21,7 @@ data-files:
   ui/router.js
   ui/views.js
   ui/api.js
-  ui/ext/classyjs/src/classy.js
+  ui/ext/classyjs/build/classy.js
   ui/ext/pathjs/path.js
   ui/ext/q/q.js
   ui/ext/requirejs/require.js

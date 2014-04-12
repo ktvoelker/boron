@@ -28,7 +28,7 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
   };
 
   var formatRunFacts = function() {
-    var formatted = {}:
+    var formatted = {};
     formatted.status = this.status[0].toLocaleUpperCase() + this.status.substring(1);
     formatted.status_verbose = formatted.status;
     if (this.status == 'fail') {
