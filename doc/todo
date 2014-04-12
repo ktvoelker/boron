@@ -2,7 +2,14 @@
 TODO
 ====
 
-Clean up the JS code with model and view classes and promises
+Implement nice view classes
+
+  Each one takes in a DOM node (the render target) and a model object
+
+  To make sure we keep track of all views in memory (in order to destroy them later),
+  we will need some "container" views
+
+Rewrite the UI using the new view and model classes
 
 Display nice build numbers, pass/fail, and start time in the numbers list
 
