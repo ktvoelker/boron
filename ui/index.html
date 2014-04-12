@@ -7,42 +7,10 @@
   <body>
     <h1><a href='#/'>Boron Build Server</a></h1>
     <div class="columns">
-      <div class="column">
-        <ul id="builds" class="button-list"></ul>
-      </div>
-      <div class="column">
-        <ul id="numbers" class="button-list"></ul>
-      </div>
-      <div class="column">
-        <div id="detail">
-          <h2 id="detail--number"></h2>
-          <dl>
-            <dt>Result</dt>
-            <dd id="detail--result"></dd>
-            <dt>Elapsed</dt>
-            <dd id="detail--elapsed"></dd>
-            <dt>Started</dt>
-            <dd id="detail--start"></dd>
-            <dt>Ended</dt>
-            <dd id="detail--end"></dd>
-          </dl>
-        </div>
-      </div>
+      <div class="column" id="parent-for-builds"></div>
+      <div class="column" id="parent-for-runs"></div>
+      <div class="column" id="parent-for-detail"></div>
     </div>
-    <div id="templates">
-      <ul>
-        <li class="build">
-          <input type="radio" name="build" class="build--click">
-          <label class="build--name"></label>
-        </li>
-        <li class="number">
-          <input type="radio" name="number" class="number--click">
-          <label class="number--number"></label>
-        </li>
-      </ul>
-    </div>
-    <script src="/ui/ext/pathjs/path.js"></script>
-    <script src="/ui/ext/requirejs/require.js"></script>
-    <script src="/ui/main.js"></script>
+    <script src="/ui/ext/requirejs/require.js" data-main="/ui/main.js"></script>
   </body>
 </html>

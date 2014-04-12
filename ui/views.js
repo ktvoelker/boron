@@ -1,5 +1,5 @@
 
-define('view', ['dom', 'classy'], function(dom, classy) {
+define('views', ['dom', 'classy'], function(dom, classy) {
 
   var List = classy.Class({
     constructor: function(children, ordered) {
@@ -56,7 +56,11 @@ define('view', ['dom', 'classy'], function(dom, classy) {
       this.$super('constructor', build.name, 'build', build.name, selected);
     },
     activate: function() {
-      // TODO
+      var target = dom.one('#parent-for-runs');
+      this.build.getRuns().then(function(runs) {
+        var view = new List(runs.map(function(run) { return new RunButton(run); }));
+        view.render(target);
+      });
     }
   });
 
@@ -66,7 +70,9 @@ define('view', ['dom', 'classy'], function(dom, classy) {
       this.$super('constructor', run.number, 'run', run.number, selected);
     },
     activate: function() {
-      // TODO
+      var target = dom.one('#parent-for-detail');
+      var view = new RunDetail(this.run);
+      view.render(target);
     }
   });
 
@@ -101,6 +107,14 @@ define('view', ['dom', 'classy'], function(dom, classy) {
       return elem;
     }
   });
+
+  return {
+    List: List,
+    RadioButton: RadioButton,
+    BuildButton: BuildButton,
+    RunButton: RunButton,
+    RunDetail: RunDetail
+  };
 
 });
 

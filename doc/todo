@@ -2,11 +2,13 @@
 TODO
 ====
 
-Implement the activate methods of RunButton and BuildButton
+JS Rewrite
 
-  And add the top-level HTML substrate for them to render into
+  Move the "selected" state into the models and use events to keep the views current
 
-  Update the routes to use the new models and views
+    This will make it easy for the router to set the initial state when creating views
+
+  Implement the router module
 
   Update the CSS to handle the new views
 

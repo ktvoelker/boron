@@ -123,5 +123,11 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
     }
     return builds;
   };
+
+  return {
+    getBuilds: getBuilds,
+    Build: Build,
+    Run: Run
+  };
 });
 
