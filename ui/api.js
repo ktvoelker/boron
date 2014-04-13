@@ -1,5 +1,5 @@
 
-define('api', ['classy', 'q', 'reqwest', 'util'], function(classy, Q, reqwest, util) {
+define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
 
   var cache = {};
 
@@ -62,7 +62,7 @@ define('api', ['classy', 'q', 'reqwest', 'util'], function(classy, Q, reqwest, u
           this.cache[build.name] = {};
         }
         if (!(number in this.cache[build.name])) {
-          this.cache[build.name][number] = new Lazy(function() {
+          this.cache[build.name][number] = Lazy.create(function() {
             var runUrl = '/output/' + build.name + '/' + number + '.json';
             return get(runUrl, function(details) {
               return new Run(build, runUrl, details);
@@ -88,11 +88,16 @@ define('api', ['classy', 'q', 'reqwest', 'util'], function(classy, Q, reqwest, u
       return get(this.url, true).then(function(details) {
         initRun.call(thisRun, details);
         return thisRun;
-      }, util.error);
+      });
     }
   });
 
   var Lazy = classy.Class({
+    __static__: {
+      create: function(f) {
+        return Q(new Lazy(f));
+      }
+    },
     constructor: function(f) {
       this.f = f;
     },
@@ -122,7 +127,7 @@ define('api', ['classy', 'q', 'reqwest', 'util'], function(classy, Q, reqwest, u
     },
     constructor: function(name) {
       this.name = name;
-      this.url = '/output/' + name + '.json';
+      this.url = '/output/' + name + '/index.json';
       this.runs = null;
     },
     getRuns: function(skipCache) {
@@ -132,7 +137,7 @@ define('api', ['classy', 'q', 'reqwest', 'util'], function(classy, Q, reqwest, u
           return numbers.map(function(number) {
             return Run.lazyInstance(thisBuild, number);
           });
-        }, util.error);
+        });
       }
       return this.runs;
     }
@@ -146,7 +151,7 @@ define('api', ['classy', 'q', 'reqwest', 'util'], function(classy, Q, reqwest, u
         return buildNames.map(function(buildName) {
           return Build.instance(buildName);
         });
-      }, util.error);
+      });
     }
     return builds;
   };

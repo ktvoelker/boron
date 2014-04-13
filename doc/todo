@@ -2,6 +2,12 @@
 TODO
 ====
 
+Add "lazy" support to the List view: you give it lazy promises of views, and it only
+forces enough of them to fill the screen, plus a bit more. It renders more when you
+scroll.
+
+Change the radio-button activate methods to go through the router
+
 Update the CSS to handle the new views
 
 Display nice build numbers, pass/fail, and start time in the numbers list

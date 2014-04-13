@@ -1,5 +1,5 @@
 
-define('views', ['api', 'dom', 'classy', 'util'], function(api, dom, classy, util) {
+define('views', ['api', 'dom', 'classy'], function(api, dom, classy) {
 
   var List = classy.Class({
     constructor: function(children, ordered) {
@@ -7,7 +7,7 @@ define('views', ['api', 'dom', 'classy', 'util'], function(api, dom, classy, uti
       this.ordered = ordered;
     },
     render: function() {
-      var elem = dom.create(this.ordered ? 'ol' : 'ul');
+      var elem = dom.create(this.ordered ? 'ol' : 'ul', {class: 'list'});
       this.children.forEach(function(child) {
         var li = dom.create('li');
         li.appendChild(child.render());
@@ -28,15 +28,18 @@ define('views', ['api', 'dom', 'classy', 'util'], function(api, dom, classy, uti
       console.warn('Subclass did not implement RadioButton.activate!');
     },
     render: function() {
-      var elem = dom.create('div');
+      var elem = dom.create('div', {class: 'radio'});
       var id = dom.genId();
-      var radio = dom.create('input', {
+      var attrs = {
         type: 'radio',
         name: this.name,
         value: this.value,
-        checked: this.checked,
         id: id
-      });
+      };
+      if (this.checked) {
+        attrs.checked = 'checked';
+      }
+      var radio = dom.create('input', attrs);
       var activateThis = this.activate.bind(this);
       radio.addEventListener('change', activateThis);
       elem.appendChild(radio);
@@ -57,18 +60,22 @@ define('views', ['api', 'dom', 'classy', 'util'], function(api, dom, classy, uti
       this.$super('constructor', build.name, 'build', build.name, selected);
     },
     activate: function() {
+      var thisButton = this;
       var target = dom.one('#parent-for-runs');
-      this.build.getRuns().then(function(runs) {
+      dom.clear(target);
+      this.build.getRuns().done(function(runs) {
         var view = new List(runs.map(function(run) {
+          // TODO "run" is a Promise, not a Run
+          console.log(run);
           var selected = false;
-          if (this.selectedRun === run) {
-            this.selectedRun = null;
+          if (thisButton.selectedRun === run) {
+            thisButton.selectedRun = null;
             selected = true;
           }
           return new RunButton(run, selected);
         }));
-        view.render(target);
-      }, util.error);
+        target.appendChild(view.render());
+      });
     }
   });
 
@@ -79,8 +86,9 @@ define('views', ['api', 'dom', 'classy', 'util'], function(api, dom, classy, uti
     },
     activate: function() {
       var target = dom.one('#parent-for-detail');
+      dom.clear(target);
       var view = new RunDetail(this.run);
-      view.render(target);
+      target.appendChild(view.render());
     }
   });
 
@@ -127,14 +135,14 @@ define('views', ['api', 'dom', 'classy', 'util'], function(api, dom, classy, uti
       dom.clear(this.parentForDetail);
       dom.clear(this.parentForRuns);
       dom.clear(this.parentForBuilds);
-      api.getBuilds().then(function(builds) {
+      api.getBuilds().done(function(builds) {
         var views = builds.map(function(build) {
           return new BuildButton(build, build === selectedBuild, selectedRun);
         });
         var view = new List(views);
         var elem = view.render();
         thisBoron.parentForBuilds.appendChild(elem);
-      }, util.error);
+      });
     },
     renderBuild: function(build) {
       this.renderRoot(build);

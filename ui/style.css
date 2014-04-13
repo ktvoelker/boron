@@ -17,10 +17,6 @@ body {
   margin-right: 20px;
 }
 
-#builds, #numbers, #detail, #templates {
-  display: none;
-}
-
 .columns {
   /* empty */
 }
@@ -34,29 +30,30 @@ body {
   padding-left: 0;
 }
 
-#builds, #numbers {
+#parent-for-builds, #parent-for-runs {
   width: 200px;
   list-style-type: none;
 }
 
-.button-list {
+.list {
   -webkit-user-select: none;
+  list-style-type: none;
 }
 
-.button-list > li {
+.list > li {
   margin: 0;
   padding: 0;
 }
 
-.button-list > li > input {
+.radio > input {
   display: none;
 }
 
-.button-list > li > input:checked + label {
+.radio > input:checked + label {
   background-color: #BBB;
 }
 
-.button-list > li > label {
+.radio > label {
   display: inline-block;
   width: 180px;
   background: none;
@@ -65,7 +62,7 @@ body {
   padding: 10px;
 }
 
-#detail {
+#parent-for-detail {
   width: 400px;
   font-size: 12pt;
 }

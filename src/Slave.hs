@@ -105,8 +105,8 @@ minBuildNumberLength = 5
 formatBuildNumber :: Integer -> T.Text
 formatBuildNumber = T.pack . show
 
-makeSummaryFile :: [FilePath] -> JSValue
-makeSummaryFile = showJSONs . map (encodeString . basename)
+makeSummaryFile :: [Integer] -> JSValue
+makeSummaryFile = showJSONs
 
 runBuild :: FilePath -> FilePath -> FilePath -> FilePath -> MVar Integer -> IO ()
 runBuild wd builder outputDir summaryFile var = do
@@ -120,7 +120,7 @@ runBuild wd builder outputDir summaryFile var = do
   let metaFileJSON = makeRunningMetaFile buildNumber startTime
   let metaFileBytes = encodeUtf8 . T.pack . encodeStrict $ metaFileJSON
   writeFile metaFile metaFileBytes
-  summaryFileJSON <- makeSummaryFile <$> getMetaFiles outputDir
+  summaryFileJSON <- makeSummaryFile <$> getBuildNumbers outputDir
   let summaryFileBytes = encodeUtf8 . T.pack . encodeStrict $ summaryFileJSON
   writeFile summaryFile summaryFileBytes
   -- Work around for https://ghc.haskell.org/trac/ghc/ticket/8448
