@@ -1,5 +1,5 @@
 
-define('views', ['dom', 'classy'], function(dom, classy) {
+define('views', ['api', 'dom', 'classy', 'util'], function(api, dom, classy, util) {
 
   var List = classy.Class({
     constructor: function(children, ordered) {
@@ -68,7 +68,7 @@ define('views', ['dom', 'classy'], function(dom, classy) {
           return new RunButton(run, selected);
         }));
         view.render(target);
-      });
+      }, util.error);
     }
   });
 
@@ -123,6 +123,7 @@ define('views', ['dom', 'classy'], function(dom, classy) {
       this.parentForDetail = dom.one('#parent-for-detail');
     },
     renderRoot: function(selectedBuild, selectedRun) {
+      var thisBoron = this;
       dom.clear(this.parentForDetail);
       dom.clear(this.parentForRuns);
       dom.clear(this.parentForBuilds);
@@ -131,8 +132,9 @@ define('views', ['dom', 'classy'], function(dom, classy) {
           return new BuildButton(build, build === selectedBuild, selectedRun);
         });
         var view = new List(views);
-        view.render();
-      });
+        var elem = view.render();
+        thisBoron.parentForBuilds.appendChild(elem);
+      }, util.error);
     },
     renderBuild: function(build) {
       this.renderRoot(build);

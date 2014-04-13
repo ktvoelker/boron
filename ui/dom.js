@@ -4,7 +4,9 @@ define('dom', [], function() {
   var idCounter = 0;
 
   function genId() {
-    return 'gen-' + idCounter++;
+    var id = idCounter;
+    idCounter += 1;
+    return 'gen-' + id;
   }
 
   function create(tag, attrs) {
@@ -90,7 +92,8 @@ define('dom', [], function() {
     clone: clone,
     toggle: toggle,
     templates: templates,
-    clear: clear
+    clear: clear,
+    genId: genId
   };
 
 });

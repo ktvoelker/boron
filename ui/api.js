@@ -1,5 +1,5 @@
 
-define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
+define('api', ['classy', 'q', 'reqwest', 'util'], function(classy, Q, reqwest, util) {
 
   var cache = {};
 
@@ -88,7 +88,7 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
       return get(this.url, true).then(function(details) {
         initRun.call(thisRun, details);
         return thisRun;
-      });
+      }, util.error);
     }
   });
 
@@ -132,7 +132,7 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
           return numbers.map(function(number) {
             return Run.lazyInstance(thisBuild, number);
           });
-        });
+        }, util.error);
       }
       return this.runs;
     }
@@ -146,7 +146,7 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
         return buildNames.map(function(buildName) {
           return Build.instance(buildName);
         });
-      });
+      }, util.error);
     }
     return builds;
   };
