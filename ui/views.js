@@ -65,8 +65,6 @@ define('views', ['api', 'dom', 'classy'], function(api, dom, classy) {
       dom.clear(target);
       this.build.getRuns().done(function(runs) {
         var view = new List(runs.map(function(run) {
-          // TODO "run" is a Promise, not a Run
-          console.log(run);
           var selected = false;
           if (thisButton.selectedRun === run) {
             thisButton.selectedRun = null;

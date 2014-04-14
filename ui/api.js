@@ -19,7 +19,7 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
 
   var maybeTime = function(x) {
     return fmap(x, function(x) {
-      return new DateTime(x);
+      return new Date(x);
     });
   };
 
@@ -57,16 +57,14 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
   var Run = classy.Class({
     __static__: {
       cache: {},
-      lazyInstance: function(build, number) {
+      instance: function(build, number) {
         if (!(build.name in this.cache)) {
           this.cache[build.name] = {};
         }
         if (!(number in this.cache[build.name])) {
-          this.cache[build.name][number] = Lazy.create(function() {
-            var runUrl = '/output/' + build.name + '/' + number + '.json';
-            return get(runUrl, function(details) {
-              return new Run(build, runUrl, details);
-            });
+          var runUrl = '/output/' + build.name + '/' + number + '.json';
+          this.cache[build.name][number] = get(runUrl).then(function(details) {
+            return new Run(build, runUrl, details);
           });
         }
         return this.cache[build.name][number];
@@ -134,9 +132,14 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
       var thisBuild = this;
       if (skipCache || this.runs === null) {
         this.runs = get(this.url, true).then(function(numbers) {
-          return numbers.map(function(number) {
-            return Run.lazyInstance(thisBuild, number);
+          var runs = [];
+          numbers.sort(function(a, b) {
+            return a - b;
           });
+          forEachReversed(numbers, function(number) {
+            runs.push(Run.instance(thisBuild, number));
+          });
+          return Q.all(runs);
         });
       }
       return this.runs;
