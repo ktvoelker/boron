@@ -85,6 +85,18 @@ define('dom', [], function() {
     elem.innerHTML = '';
   }
 
+  function getClasses(elem) {
+    return elem.hasAttribute('class') ? elem.getAttribute('class').split(' ') : [];
+  }
+
+  function addClass(elem, cls) {
+    var classes = getClasses(elem);
+    if (classes.indexOf(cls) == -1) {
+      classes.push(cls);
+      elem.setAttribute('class', classes.join(' '));
+    }
+  }
+
   return {
     create: create,
     all: all,
@@ -93,7 +105,9 @@ define('dom', [], function() {
     toggle: toggle,
     templates: templates,
     clear: clear,
-    genId: genId
+    genId: genId,
+    getClasses: getClasses,
+    addClass: addClass
   };
 
 });

@@ -66,6 +66,11 @@ define('views', ['api', 'dom', 'classy'], function(api, dom, classy) {
     },
     activate: function() {
       this.run.load();
+    },
+    render: function() {
+      var elem = this.$super('render');
+      dom.addClass(elem, 'status-' + this.run.status);
+      return elem;
     }
   });
 

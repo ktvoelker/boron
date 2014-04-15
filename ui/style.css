@@ -49,8 +49,26 @@ body {
   display: none;
 }
 
+.radio.status-pass > input + label {
+  background-color: #74E868;
+}
+
+.radio.status-fail > input + label {
+  background-color: #FD7279;
+}
+
 .radio > input:checked + label {
-  background-color: #BBB;
+  background-color: #AAAAAA;
+  color: #FFF;
+  font-weight: bold;
+}
+
+.radio.status-pass > input:checked + label {
+  background-color: #329D27;
+}
+
+.radio.status-fail > input:checked + label {
+  background-color: #FD3F49;
 }
 
 .radio > label {

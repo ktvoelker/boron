@@ -2,9 +2,9 @@
 TODO
 ====
 
-Display nice build numbers, pass/fail, and start time in the numbers list
+Display start time in the numbers list
 
-Display last-pass status in build list
+Display last-pass status and last-start time in the build list
 
 Get rid of the redundant layers of caching, hopefully simplifying everything
 

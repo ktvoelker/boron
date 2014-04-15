@@ -6,7 +6,7 @@
   "builds": {
     "foo": {
       "source": "git://github.com/ktvoelker/boron.git",
-      "interval": 5,
+      "interval": 240,
       "poll": "/usr/bin/false",
       "build": "/usr/bin/true"
     }
