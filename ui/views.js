@@ -40,53 +40,32 @@ define('views', ['api', 'dom', 'classy'], function(api, dom, classy) {
         attrs.checked = 'checked';
       }
       var radio = dom.create('input', attrs);
-      var activateThis = this.activate.bind(this);
-      radio.addEventListener('change', activateThis);
+      radio.addEventListener('change', this.activate.bind(this));
       elem.appendChild(radio);
       var label = dom.create('label', {'for': id});
       label.innerText = this.label;
       elem.appendChild(label);
-      if (this.checked) {
-        window.setTimeout(activateThis, 0);
-      }
       return elem;
     }
   });
 
   var BuildButton = classy.Class({Extends: RadioButton}, {
-    constructor: function(build, selected, selectedRun) {
+    constructor: function(build, checked) {
       this.build = build;
-      this.selectedRun = selectedRun;
-      this.$super('constructor', build.name, 'build', build.name, selected);
+      this.$super('constructor', build.name, 'build', build.name, checked);
     },
     activate: function() {
-      var thisButton = this;
-      var target = dom.one('#parent-for-runs');
-      dom.clear(target);
-      this.build.getRuns().done(function(runs) {
-        var view = new List(runs.map(function(run) {
-          var selected = false;
-          if (thisButton.selectedRun === run) {
-            thisButton.selectedRun = null;
-            selected = true;
-          }
-          return new RunButton(run, selected);
-        }));
-        target.appendChild(view.render());
-      });
+      this.build.load();
     }
   });
 
   var RunButton = classy.Class({Extends: RadioButton}, {
-    constructor: function(run, selected) {
+    constructor: function(run, checked) {
       this.run = run;
-      this.$super('constructor', run.number, 'run', run.number, selected);
+      this.$super('constructor', run.number, 'run', run.number, checked);
     },
     activate: function() {
-      var target = dom.one('#parent-for-detail');
-      dom.clear(target);
-      var view = new RunDetail(this.run);
-      target.appendChild(view.render());
+      this.run.load();
     }
   });
 
@@ -128,25 +107,37 @@ define('views', ['api', 'dom', 'classy'], function(api, dom, classy) {
       this.parentForRuns = dom.one('#parent-for-runs');
       this.parentForDetail = dom.one('#parent-for-detail');
     },
-    renderRoot: function(selectedBuild, selectedRun) {
+    renderRoot: function(selectedBuild) {
       var thisBoron = this;
       dom.clear(this.parentForDetail);
       dom.clear(this.parentForRuns);
       dom.clear(this.parentForBuilds);
       api.getBuilds().done(function(builds) {
         var views = builds.map(function(build) {
-          return new BuildButton(build, build === selectedBuild, selectedRun);
+          return new BuildButton(build, build === selectedBuild);
         });
         var view = new List(views);
         var elem = view.render();
         thisBoron.parentForBuilds.appendChild(elem);
       });
     },
-    renderBuild: function(build) {
+    renderBuild: function(build, selectedRun) {
+      var thisBoron = this;
       this.renderRoot(build);
+      build.getRuns().done(function(runs) {
+        var view = new List(runs.map(function(run) {
+          return new RunButton(run, run === selectedRun);
+        }));
+        thisBoron.parentForRuns.appendChild(view.render());
+      });
     },
     renderRun: function(run) {
-      this.renderRoot(run.build, run);
+      var thisBoron = this;
+      run.done(function(run) {
+        thisBoron.renderBuild(run.build, run);
+        var view = new RunDetail(run);
+        thisBoron.parentForDetail.appendChild(view.render());
+      });
     }
   });
 

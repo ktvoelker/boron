@@ -87,6 +87,9 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
         initRun.call(thisRun, details);
         return thisRun;
       });
+    },
+    load: function() {
+      window.location.hash = '/build/' + this.build.name + '/' + this.number;
     }
   });
 
@@ -143,6 +146,9 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
         });
       }
       return this.runs;
+    },
+    load: function() {
+      window.location.hash = '/build/' + this.name;
     }
   });
 

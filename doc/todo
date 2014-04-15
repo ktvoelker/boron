@@ -2,8 +2,6 @@
 TODO
 ====
 
-Change the radio-button activate methods to go through the router
-
 Display nice build numbers, pass/fail, and start time in the numbers list
 
 Display last-pass status in build list
