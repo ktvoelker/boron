@@ -16,7 +16,6 @@ import Network.Wai.Handler.Warp
 import Prelude hiding (FilePath)
 
 import Command
-import Util
 
 data WebConfig =
   WebConfig
@@ -80,7 +79,7 @@ runWeb :: WebConfig -> Chan Command -> IO ()
 runWeb WebConfig{..} chan =
   runSettings (settings webPort)
     $ routerApp
-      (fileApp $ traceValue webUiRoot)
+      (fileApp webUiRoot)
       (fileApp webStaticRoot)
       (controlApp webBuildNames chan)
 
