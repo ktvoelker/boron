@@ -13,6 +13,36 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
     return d.promise;
   };
 
+  var Url = classy.Class({
+    constructor: function(url) {
+      this.url = url;
+    },
+    get: function() {
+      return get(this.url);
+    }
+  });
+
+  var RunUrl = classy.Class({Extends: Url}, {
+    constructor: function(build, number) {
+      this.build = build;
+      this.number = number;
+      this.url = '/output/' + build.name + '/' + number + '.json';
+    }
+  });
+
+  var BuildUrl = classy.Class({Extends: Url}, {
+    constructor: function(name) {
+      this.name = name;
+      this.url = '/output/' + name + '/index.json';
+    }
+  });
+
+  var BuildsUrl = classy.Class({Extends: Url}, {
+    constructor: function() {
+      this.url = '/output/builds.json';
+    }
+  });
+
   var fmap = function(x, f) {
     return x === null ? null : f(x);
   };
@@ -27,67 +57,101 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
     return dt.toLocaleString();
   };
 
-  var formatRunFacts = function() {
-    var formatted = {};
-    formatted.status = this.status[0].toLocaleUpperCase() + this.status.substring(1);
-    formatted.status_verbose = formatted.status;
-    if (this.status == 'fail') {
-      formatted.status_verbose += ' (' + this.code + ')';
-    }
-    formatted.elapsed = this.elapsed + ' ms';
-    formatted.start = formatTime(this.start);
-    formatted.end = this.end == null ? 'Not yet' : formatTime(this.end);
-    this.formatted = formatted;
-  }
+  var identity = function(x) {
+    return x;
+  };
 
-  var initRun = function(details) {
-    this.number = details.number;
-    this.status = details.status;
-    this.code = details.code;
-    this.start = maybeTime(details.start);
-    this.end = maybeTime(details.end);
-    if (this.end === null) {
-      this.elapsed = new DateTime() - this.start;
-    } else {
-      this.elapsed = this.end - this.start;
+  var property = function(name) {
+    return function(x) {
+      return x[name];
+    };
+  };
+
+  var compose = function(g, f) {
+    return function(x) {
+      return g(f(x));
     }
-    formatRunFacts.call(this);
+  };
+
+  const RUN_DETAILS = {
+    'status': property('status'),
+    'code': property('code'),
+    'start': compose(maybeTime, property('start')),
+    'end': compose(maybeTime, property('end'))
+  };
+
+  const FORMATTED_RUN_DETAILS = {
+    'status': function() {
+      return this.status.then(function(status) {
+        return status[0].toLocaleUpperCase() + status.substring(1);
+      })
+    },
+    'status_verbose': function() {
+      return Q.all([this.status, this.code, this.formatted.status]).then(function(arr) {
+        var result = arr[2];
+        if (arr[0] == 'fail') {
+          result += ' (' + arr[1] + ')';
+        }
+        return result;
+      });
+    },
+    'elapsed': function() {
+      return this.elapsed.then(function(elapsed) {
+        return elapsed + ' ms';
+      });
+    },
+    'start': function() {
+      return this.start.then(formatTime);
+    },
+    'end': function() {
+      return this.end.then(function(end) {
+        return end == null ? 'Not yet' : formatTime(end);
+      });
+    }
+  };
+
+  var forEach = function(obj, f) {
+    for (var key in obj) {
+      f(obj[key], key);
+    }
   };
 
   var Run = classy.Class({
-    __static__: {
-      cache: {},
-      instance: function(build, number) {
-        var name = build.name;
-        if (!(name in this.cache)) {
-          this.cache[name] = {};
-        }
-        var cache = this.cache[name];
-        if (!(number in cache)) {
-          var runUrl = '/output/' + name + '/' + number + '.json';
-          cache[number] = get(runUrl).then(function(details) {
-            return new Run(build, runUrl, details);
+    constructor: function(source) {
+      var thisRun = this;
+      this.build = source.build;
+      this.number = source.number;
+      this.source = source;
+      Object.defineProperty(thisRun, 'details', {
+        get: source.get.bind(source)
+      });
+      forEach(RUN_DETAILS, function(detail, name) {
+        Object.defineProperty(thisRun, name, {
+          get: function() {
+            return thisRun.details.then(detail);
+          }
+        });
+      });
+      Object.defineProperty(thisRun, 'elapsed', {
+        get: function() {
+          return thisRun.end.then(function(end) {
+            if (end === null) {
+              end = new DateTime();
+            }
+            return thisRun.start.then(function(start) {
+              return end - start;
+            });
           });
         }
-        return cache[number];
-      }
-    },
-    constructor: function(build, url, details) {
-      this.build = build;
-      this.url = url;
-      initRun.call(this, details);
-    },
-    isDone: function() {
-      return this.status == 'pass' || this.status == 'fail';
-    },
-    refresh: function() {
-      if (this.isDone()) {
-        return Q(this);
-      }
-      var thisRun = this;
-      return get(this.url, true).then(function(details) {
-        initRun.call(thisRun, details);
-        return thisRun;
+      });
+      var formatted = {};
+      forEach(FORMATTED_RUN_DETAILS, function(detail, name) {
+        Object.defineProperty(formatted, name, {
+          get: detail.bind(thisRun)
+        });
+      });
+      Object.defineProperty(thisRun, 'formatted', {
+        value: formatted
       });
     },
     load: function() {
@@ -119,68 +183,45 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
   }
 
   var Build = classy.Class({
-    __static__: {
-      cache: {},
-      instance: function(name) {
-        if (!(name in this.cache)) {
-          var url = '/output/' + name + '/index.json';
-          this.cache[name] = get(url).then(function(data) {
-            // TODO use data.latest
-            return new Build(name, url, data.all);
+    constructor: function(source) {
+      var thisBuild = this;
+      this.source = source;
+      this.name = source.name;
+      Object.defineProperty(this, 'runs', {
+        get: function() {
+          return thisBuild.source.get().then(function(data) {
+            var numbers = data.all;
+            var runs = [];
+            numbers.sort(function(a, b) {
+              return a - b;
+            });
+            forEachReversed(numbers, function(number) {
+              runs.push(new Run(new RunUrl(thisBuild, number)));
+            });
+            return Q.all(runs);
           });
         }
-        return this.cache[name];
-      }
-    },
-    constructor: function(name, url, numbers) {
-      this.name = name;
-      this.url = url;
-      this.numbers = numbers;
-      this.runs = null;
-    },
-    getRuns: function(skipCache) {
-      var thisBuild = this;
-      if (skipCache || this.runs === null) {
-        var numbersPromise =
-          skipCache
-          ? get(this.url, true).then(function(data) { return data.all; })
-          : Q(this.numbers);
-        this.runs = numbersPromise.then(function(numbers) {
-          thisBuild.numbers = numbers;
-          var runs = [];
-          numbers.sort(function(a, b) {
-            return a - b;
-          });
-          forEachReversed(numbers, function(number) {
-            runs.push(Run.instance(thisBuild, number));
-          });
-          return Q.all(runs);
-        });
-      }
-      return this.runs;
+      });
     },
     load: function() {
       window.location.hash = '/build/' + this.name;
     }
   });
 
-  var builds = null;
-
-  var getBuilds = function(skipCache) {
-    if (skipCache || builds === null) {
-      builds = get('/output/builds.json').then(function(buildNames) {
-        return Q.all(buildNames.map(function(buildName) {
-          return Build.instance(buildName);
-        }));
-      });
-    }
-    return builds;
+  var getBuilds = function() {
+    return (new BuildsUrl()).get().then(function(names) {
+      return Q.all(names.map(function(name) {
+        return new Build(new BuildUrl(name));
+      }));
+    });
   };
 
   return {
     getBuilds: getBuilds,
     Build: Build,
-    Run: Run
+    Run: Run,
+    BuildUrl: BuildUrl,
+    RunUrl: RunUrl
   };
 });
 

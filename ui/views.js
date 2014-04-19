@@ -69,7 +69,9 @@ define('views', ['api', 'q', 'dom', 'classy'], function(api, Q, dom, classy) {
     },
     render: function() {
       var elem = this.$super('render');
-      dom.addClass(elem, 'status-' + this.run.status);
+      this.run.status.done(function(status) {
+        dom.addClass(elem, 'status-' + status);
+      });
       return elem;
     }
   });
@@ -91,7 +93,9 @@ define('views', ['api', 'q', 'dom', 'classy'], function(api, Q, dom, classy) {
         tdKey.innerText = key;
         tr.appendChild(tdKey);
         var tdValue = dom.create('dd');
-        tdValue.innerText = value;
+        value.done(function(value) {
+          tdValue.innerText = value;
+        });
         tr.appendChild(tdValue);
         tbody.appendChild(tr);
       };
@@ -119,7 +123,10 @@ define('views', ['api', 'q', 'dom', 'classy'], function(api, Q, dom, classy) {
       dom.clear(this.parentForBuilds);
       api.getBuilds().done(function(builds) {
         var views = builds.map(function(build) {
-          return new BuildButton(build, build === selectedBuild);
+          return new BuildButton(
+            build,
+            selectedBuild != null && build.name == selectedBuild.name
+          );
         });
         var view = new List(views);
         var elem = view.render();
@@ -129,22 +136,21 @@ define('views', ['api', 'q', 'dom', 'classy'], function(api, Q, dom, classy) {
     renderBuild: function(build, selectedRun) {
       var thisBoron = this;
       this.renderRoot(build);
-      build.done(function(build) {
-        build.getRuns().done(function(runs) {
-          var view = new List(runs.map(function(run) {
-            return new RunButton(run, run === selectedRun);
-          }));
-          thisBoron.parentForRuns.appendChild(view.render());
-        });
+      build.runs.done(function(runs) {
+        var view = new List(runs.map(function(run) {
+          return new RunButton(
+            run,
+            selectedRun != null && run.number == selectedRun.number
+          );
+        }));
+        thisBoron.parentForRuns.appendChild(view.render());
       });
     },
     renderRun: function(run) {
       var thisBoron = this;
-      run.done(function(run) {
-        thisBoron.renderBuild(Q(run.build), run);
-        var view = new RunDetail(run);
-        thisBoron.parentForDetail.appendChild(view.render());
-      });
+      thisBoron.renderBuild(run.build, run);
+      var view = new RunDetail(run);
+      thisBoron.parentForDetail.appendChild(view.render());
     }
   });
 
