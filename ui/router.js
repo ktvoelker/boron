@@ -14,9 +14,10 @@ define('router', ['api', 'views', 'path'], function(api, views, path) {
     });
 
     path.map('#/build/:build/:number').to(function() {
-      view.renderRun(api.Run.instance(
-          api.Build.instance(this.params.build),
-          this.params.number));
+      var number = this.params.number;
+      api.Build.instance(this.params.build).done(function(build) {
+        view.renderRun(api.Run.instance(build, number));
+      });
     });
 
     path.root('#/');

@@ -8,6 +8,13 @@ Display last-pass status and last-start time in the build list
 
 Get rid of the redundant layers of caching, hopefully simplifying everything
 
+  1. Model objects should be stateless wrappers around URLs that return promises
+     in response to all requests for data
+  2. URL access can then go through a local cache (like the one we already have, but
+     perhaps a bit smarter)
+
+Keep the web UI up-to-date automatically (with WebSockets?)
+
 Fix the missing base path in the directory indices
 
 Figure out why the server sometimes hangs or returns broken files

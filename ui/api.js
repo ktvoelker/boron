@@ -58,16 +58,18 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
     __static__: {
       cache: {},
       instance: function(build, number) {
-        if (!(build.name in this.cache)) {
-          this.cache[build.name] = {};
+        var name = build.name;
+        if (!(name in this.cache)) {
+          this.cache[name] = {};
         }
-        if (!(number in this.cache[build.name])) {
-          var runUrl = '/output/' + build.name + '/' + number + '.json';
-          this.cache[build.name][number] = get(runUrl).then(function(details) {
+        var cache = this.cache[name];
+        if (!(number in cache)) {
+          var runUrl = '/output/' + name + '/' + number + '.json';
+          cache[number] = get(runUrl).then(function(details) {
             return new Run(build, runUrl, details);
           });
         }
-        return this.cache[build.name][number];
+        return cache[number];
       }
     },
     constructor: function(build, url, details) {
@@ -121,20 +123,30 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
       cache: {},
       instance: function(name) {
         if (!(name in this.cache)) {
-          this.cache[name] = new Build(name);
+          var url = '/output/' + name + '/index.json';
+          this.cache[name] = get(url).then(function(data) {
+            // TODO use data.latest
+            return new Build(name, url, data.all);
+          });
         }
         return this.cache[name];
       }
     },
-    constructor: function(name) {
+    constructor: function(name, url, numbers) {
       this.name = name;
-      this.url = '/output/' + name + '/index.json';
+      this.url = url;
+      this.numbers = numbers;
       this.runs = null;
     },
     getRuns: function(skipCache) {
       var thisBuild = this;
       if (skipCache || this.runs === null) {
-        this.runs = get(this.url, true).then(function(numbers) {
+        var numbersPromise =
+          skipCache
+          ? get(this.url, true).then(function(data) { return data.all; })
+          : Q(this.numbers);
+        this.runs = numbersPromise.then(function(numbers) {
+          thisBuild.numbers = numbers;
           var runs = [];
           numbers.sort(function(a, b) {
             return a - b;
@@ -157,9 +169,9 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
   var getBuilds = function(skipCache) {
     if (skipCache || builds === null) {
       builds = get('/output/builds.json').then(function(buildNames) {
-        return buildNames.map(function(buildName) {
+        return Q.all(buildNames.map(function(buildName) {
           return Build.instance(buildName);
-        });
+        }));
       });
     }
     return builds;

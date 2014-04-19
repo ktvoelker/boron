@@ -105,8 +105,12 @@ minBuildNumberLength = 5
 formatBuildNumber :: Integer -> T.Text
 formatBuildNumber = T.pack . show
 
-makeSummaryFile :: [Integer] -> JSValue
-makeSummaryFile = showJSONs
+makeSummaryFile :: JSObject JSValue -> [Integer] -> JSObject JSValue
+makeSummaryFile latestMetaFile allBuildNumbers =
+  toJSObject
+  $ [ ("latest", JSObject latestMetaFile)
+    , ("all", showJSONs allBuildNumbers)
+    ]
 
 runBuild :: FilePath -> FilePath -> FilePath -> FilePath -> MVar Integer -> IO ()
 runBuild wd builder outputDir summaryFile var = do
@@ -120,7 +124,7 @@ runBuild wd builder outputDir summaryFile var = do
   let metaFileJSON = makeRunningMetaFile buildNumber startTime
   let metaFileBytes = encodeUtf8 . T.pack . encodeStrict $ metaFileJSON
   writeFile metaFile metaFileBytes
-  summaryFileJSON <- makeSummaryFile <$> getBuildNumbers outputDir
+  summaryFileJSON <- makeSummaryFile metaFileJSON <$> getBuildNumbers outputDir
   let summaryFileBytes = encodeUtf8 . T.pack . encodeStrict $ summaryFileJSON
   writeFile summaryFile summaryFileBytes
   -- Work around for https://ghc.haskell.org/trac/ghc/ticket/8448
@@ -138,6 +142,9 @@ runBuild wd builder outputDir summaryFile var = do
   let metaFileJSON = makeMetaFile buildNumber startTime endTime result
   let metaFileBytes = encodeUtf8 . T.pack . encodeStrict $ metaFileJSON
   writeFile metaFile metaFileBytes
+  summaryFileJSON <- makeSummaryFile metaFileJSON <$> getBuildNumbers outputDir
+  let summaryFileBytes = encodeUtf8 . T.pack . encodeStrict $ summaryFileJSON
+  writeFile summaryFile summaryFileBytes
   putMVar var $ buildNumber + 1
 
 runSlave :: Build -> IO ()

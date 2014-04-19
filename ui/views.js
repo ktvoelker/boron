@@ -1,5 +1,5 @@
 
-define('views', ['api', 'dom', 'classy'], function(api, dom, classy) {
+define('views', ['api', 'q', 'dom', 'classy'], function(api, Q, dom, classy) {
 
   var List = classy.Class({
     constructor: function(children, ordered) {
@@ -129,17 +129,19 @@ define('views', ['api', 'dom', 'classy'], function(api, dom, classy) {
     renderBuild: function(build, selectedRun) {
       var thisBoron = this;
       this.renderRoot(build);
-      build.getRuns().done(function(runs) {
-        var view = new List(runs.map(function(run) {
-          return new RunButton(run, run === selectedRun);
-        }));
-        thisBoron.parentForRuns.appendChild(view.render());
+      build.done(function(build) {
+        build.getRuns().done(function(runs) {
+          var view = new List(runs.map(function(run) {
+            return new RunButton(run, run === selectedRun);
+          }));
+          thisBoron.parentForRuns.appendChild(view.render());
+        });
       });
     },
     renderRun: function(run) {
       var thisBoron = this;
       run.done(function(run) {
-        thisBoron.renderBuild(run.build, run);
+        thisBoron.renderBuild(Q(run.build), run);
         var view = new RunDetail(run);
         thisBoron.parentForDetail.appendChild(view.render());
       });
