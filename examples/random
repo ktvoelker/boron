@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+R="$(head -c 1 /dev/urandom | hexdump -n 1 -d | head -n 1 | awk '{print $2}')"
+exit "$(expr "$R" % 2)"
