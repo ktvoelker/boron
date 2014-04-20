@@ -58,17 +58,8 @@ body {
 }
 
 .radio > input:checked + label {
-  background-color: #AAAAAA;
   color: #FFF;
   font-weight: bold;
-}
-
-.radio.status-pass > input:checked + label {
-  background-color: #329D27;
-}
-
-.radio.status-fail > input:checked + label {
-  background-color: #FD3F49;
 }
 
 .radio > label {
