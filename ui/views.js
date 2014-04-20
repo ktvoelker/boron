@@ -43,9 +43,18 @@ define('views', ['api', 'q', 'dom', 'classy'], function(api, Q, dom, classy) {
       radio.addEventListener('change', this.activate.bind(this));
       elem.appendChild(radio);
       var label = dom.create('label', {'for': id});
-      label.innerText = this.label;
+      var labelTitle = dom.create('span', {'class': 'title'});
+      labelTitle.innerText = this.label;
+      label.appendChild(labelTitle);
+      var labelData = this.renderLabelData();
+      if (labelData != null) {
+        label.appendChild(labelData);
+      }
       elem.appendChild(label);
       return elem;
+    },
+    renderLabelData: function() {
+      return null;
     }
   });
 
@@ -71,6 +80,13 @@ define('views', ['api', 'q', 'dom', 'classy'], function(api, Q, dom, classy) {
       var elem = this.$super('render');
       this.run.status.done(function(status) {
         dom.addClass(elem, 'status-' + status);
+      });
+      return elem;
+    },
+    renderLabelData: function() {
+      var elem = dom.create('span', {'class': 'time'});
+      this.run.formatted.start.done(function(start) {
+        elem.innerText = start;
       });
       return elem;
     }

@@ -80,6 +80,12 @@ body {
   padding: 10px;
 }
 
+.radio > label > .time {
+  font-size: 10pt;
+  font-style: italic;
+  margin-left: 20px;
+}
+
 #parent-for-detail {
   width: 400px;
   font-size: 12pt;
