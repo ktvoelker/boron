@@ -2,27 +2,6 @@
 TODO
 ====
 
-Figure out a way to prevent race conditions resulting from asynchronous UI rendering
-
-  For example, if I click two runs in quick succession, and both require fetching
-  the details from the network, it could happen that the one I clicked on second
-  ends up loading from the network first, in which case its view would likely be
-  overwritten by the first.
-
-  Possible solutions:
-
-    1. Freeze the UI until updates are complete, so that you can't click a second time.
-
-    2. When asynchronous data is available, check some variable to see if that object
-       is still visible in the UI, and don't update unless it is.
-
-    3. Perform all asynchronous rendering into a container element specific to the
-       object being rendered, and ensure that the insertion and removal of those
-       containers is synchronous. Thus, updates to any but the latest container would
-       have no visual effect. (You can also view this approach as an implementation of
-       #2 in which the "variable" is whether or not that object's container is attached
-       to the document.)
-
 Prevent unnecessary UI flickering
 
 Make file writes atomic (or at least closer, by writing a temp file and then moving it)
