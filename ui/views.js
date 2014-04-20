@@ -58,6 +58,19 @@ define('views', ['api', 'q', 'dom', 'classy'], function(api, Q, dom, classy) {
     }
   });
 
+  var renderStatus = function(elem, run) {
+    run.status.done(function(status) {
+      dom.addClass(elem, 'status-' + status);
+    });
+  };
+
+  var renderTime = function(elem, run) {
+    dom.addClass(elem, 'time');
+    run.formatted.start.done(function(start) {
+      elem.innerText = start;
+    });
+  };
+
   var BuildButton = classy.Class({Extends: RadioButton}, {
     constructor: function(build, checked) {
       this.build = build;
@@ -65,6 +78,20 @@ define('views', ['api', 'q', 'dom', 'classy'], function(api, Q, dom, classy) {
     },
     activate: function() {
       this.build.load();
+    },
+    render: function() {
+      var elem = this.$super('render');
+      this.build.latest.then(function(run) {
+        renderStatus(elem, run);
+      });
+      return elem;
+    },
+    renderLabelData: function() {
+      var elem = dom.create('span');
+      this.build.latest.then(function(run) {
+        renderTime(elem, run);
+      });
+      return elem;
     }
   });
 
@@ -78,16 +105,12 @@ define('views', ['api', 'q', 'dom', 'classy'], function(api, Q, dom, classy) {
     },
     render: function() {
       var elem = this.$super('render');
-      this.run.status.done(function(status) {
-        dom.addClass(elem, 'status-' + status);
-      });
+      renderStatus(elem, this.run);
       return elem;
     },
     renderLabelData: function() {
-      var elem = dom.create('span', {'class': 'time'});
-      this.run.formatted.start.done(function(start) {
-        elem.innerText = start;
-      });
+      var elem = dom.create('span');
+      renderTime(elem, this.run);
       return elem;
     }
   });

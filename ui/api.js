@@ -155,6 +155,16 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
     }
   }
 
+  var LatestRunSource = classy.Class({
+    constructor: function(json) {
+      this.json = json;
+      this.number = json.number;
+    },
+    get: function() {
+      return Q(this.json);
+    }
+  });
+
   var Build = classy.Class({
     constructor: function(source) {
       var thisBuild = this;
@@ -172,6 +182,13 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
               runs.push(new Run(new RunUrl(thisBuild, number)));
             });
             return Q.all(runs);
+          });
+        }
+      });
+      Object.defineProperty(this, 'latest', {
+        get: function() {
+          return thisBuild.source.get().then(function(data) {
+            return new Run(new LatestRunSource(data.latest));
           });
         }
       });
