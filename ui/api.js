@@ -1,14 +1,8 @@
 
 define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
 
-  var cache = {};
-
-  var get = function(url, skipCache) {
-    if (!skipCache && url in cache) {
-      return cache[url];
-    }
+  var get = function(url) {
     var d = Q.defer();
-    cache[url] = d.promise;
     reqwest(url, d.resolve.bind(d), d.reject.bind(d));
     return d.promise;
   };
@@ -55,10 +49,6 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
 
   var formatTime = function(dt) {
     return dt.toLocaleString();
-  };
-
-  var identity = function(x) {
-    return x;
   };
 
   var property = function(name) {
@@ -156,23 +146,6 @@ define('api', ['classy', 'q', 'reqwest'], function(classy, Q, reqwest) {
     },
     load: function() {
       window.location.hash = '/build/' + this.build.name + '/' + this.number;
-    }
-  });
-
-  var Lazy = classy.Class({
-    __static__: {
-      create: function(f) {
-        return Q(new Lazy(f));
-      }
-    },
-    constructor: function(f) {
-      this.f = f;
-    },
-    then: function(onFulfilled, onRejected, onProgress) {
-      var f = this.f;
-      this.f = null;
-      this.p = f();
-      return p.then(onFulfilled, onRejected, onProgress);
     }
   });
 

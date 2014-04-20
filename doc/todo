@@ -6,10 +6,6 @@ Display start time in the numbers list
 
 Display last-pass status and last-start time in the build list
 
-Serve appropriate TTLs on all output files
-
-Keep the web UI up-to-date automatically (with WebSockets?)
-
 Figure out a way to prevent race conditions resulting from asynchronous UI rendering
 
   For example, if I click two runs in quick succession, and both require fetching
@@ -30,6 +26,8 @@ Figure out a way to prevent race conditions resulting from asynchronous UI rende
        have no visual effect. (You can also view this approach as an implementation of
        #2 in which the "variable" is whether or not that object's container is attached
        to the document.)
+
+Make file writes atomic (or at least closer, by writing a temp file and then moving it)
 
 Fix the missing base path in the directory indices
 
