@@ -1,18 +1,15 @@
 [submodule "ui/ext/requirejs"]
 	path = ui/ext/requirejs
-	url = github:jrburke/requirejs.git
+	url = git://github.com/jrburke/requirejs.git
 [submodule "ui/ext/reqwest"]
 	path = ui/ext/reqwest
-	url = github:ded/reqwest.git
+	url = git://github.com/ded/reqwest.git
 [submodule "ui/ext/pathjs"]
 	path = ui/ext/pathjs
-	url = github:mtrpcic/pathjs.git
+	url = git://github.com/mtrpcic/pathjs.git
 [submodule "ui/ext/classyjs"]
 	path = ui/ext/classyjs
-	url = github:foo123/classy.js.git
-[submodule "ui/ext/p"]
-	path = ui/ext/p
-	url = github:evandrolg/p.git
+	url = git://github.com/foo123/classy.js.git
 [submodule "ui/ext/q"]
 	path = ui/ext/q
-	url = github:kriskowal/q.git
+	url = git://github.com/kriskowal/q.git
