@@ -2,6 +2,10 @@
 TODO
 ====
 
+Write documentation
+
+Write tests
+
 Prevent unnecessary UI flickering
 
 Make file writes atomic (or at least closer, by writing a temp file and then moving it)
@@ -9,6 +13,4 @@ Make file writes atomic (or at least closer, by writing a temp file and then mov
 Fix the missing base path in the directory indices
 
 Figure out why the server sometimes hangs or returns broken files
-
-Tests!
 
