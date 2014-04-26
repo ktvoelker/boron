@@ -18,7 +18,9 @@ import System.Exit
 import System.Process
 import Text.JSON
 
+import Command
 import Config
+import Timer
 import Util
 
 run :: Maybe FilePath -> String -> [String] -> IO ExitCode
@@ -35,12 +37,6 @@ getSource source workDir =
     ExitSuccess -> return ()
     ExitFailure _ ->
       abort $ "Failed to clone " <> source <> " to " <> displayFilePath workDir
-
-microsecondsPerSecond :: (Num a) => a
-microsecondsPerSecond = 1000000
-
-wait :: NominalDiffTime -> IO ()
-wait = threadDelay . round . (* microsecondsPerSecond) . toRational
 
 runPoll :: FilePath -> FilePath -> IO Bool
 runPoll wd fp = (/= ExitSuccess) <$> run (Just wd) (encodeString fp) []
@@ -147,16 +143,22 @@ runBuild wd builder outputDir summaryFile var = do
   writeFile summaryFile summaryFileBytes
   putMVar var $ buildNumber + 1
 
-runSlave :: Build -> IO ()
-runSlave Build{..} = do
+runSlave :: Build -> Chan BuildCommand -> IO ()
+runSlave Build{..} chan = do
   ensureDirectory buildOutputDir
   buildVar <- getFirstBuildNumber buildOutputDir >>= newMVar
   needSource <- not <$> isDirectory buildWorkDir
   when needSource $ getSource buildSource buildWorkDir
   let summaryFile = buildOutputDir </> "index.json"
   let doBuild = runBuild buildWorkDir buildBuilder buildOutputDir summaryFile buildVar
+  let pollAgain = startTimer buildPollInterval $ writeChan chan Poll
+  pollAgain
   forever $ do
-    wait buildPollInterval
-    shouldBuild <- runPoll buildWorkDir buildPoller
-    when shouldBuild doBuild
+    readChan chan >>= \case
+      StartBuild -> doBuild
+      StopBuild -> todo
+      Poll -> do
+        shouldBuild <- runPoll buildWorkDir buildPoller
+        when shouldBuild doBuild
+        pollAgain
 

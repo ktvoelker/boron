@@ -2,6 +2,16 @@
 TODO
 ====
 
+Write a command-line tool for issuing build commands
+
+Add build commands into the UI
+
+Implement support for StopBuild command
+
+Implement all remaining todos
+
+Include information about how each build was started
+
 Write documentation
 
 Write tests

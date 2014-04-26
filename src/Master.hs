@@ -34,15 +34,23 @@ masterFileName = fromText "builds.json"
 writeMasterFile :: FilePath -> [T.Text] -> IO ()
 writeMasterFile fp = writeFile fp . encodeUtf8 . T.pack . encodeStrict
 
-handleCommand :: Command -> IO ()
-handleCommand = todo
+handleCommand :: [(T.Text, Chan BuildCommand)] -> Command -> IO ()
+handleCommand builds = \case
+  BuildCommand name buildCommand -> case lookup name builds of
+    Nothing -> todo
+    Just chan -> writeChan chan buildCommand
 
 runMaster :: Config -> IO ()
 runMaster config@Config{..} = do
   ensureDirectory configOutputDir
   ensureDirectory configWorkDir
   writeMasterFile (configOutputDir </> masterFileName) (map buildName configBuilds)
-  mapM_ (forkIO . runSlave) configBuilds
+  buildChans <- mapM (const newChan) configBuilds
+  mapM_ (forkIO . uncurry runSlave) $ zip configBuilds buildChans
   (controlChan, _) <- webConfig config >>= forkWeb
-  forever $ readChan controlChan >>= handleCommand
+  let
+  { namedBuildChans
+    = zipWith (\build chan -> (buildName build, chan)) configBuilds buildChans
+  }
+  forever $ readChan controlChan >>= handleCommand namedBuildChans
 
