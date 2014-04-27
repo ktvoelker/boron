@@ -2,8 +2,6 @@
 TODO
 ====
 
-Write a command-line tool for issuing build commands
-
 Add build commands into the UI
 
 Implement support for StopBuild command
