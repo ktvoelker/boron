@@ -12,6 +12,10 @@ Interpret exit codes other than 1 from poll as indicating a failure to poll
   build indicating a failed poll (that way, you don't accumulate a huge list of failed
   poll entries - you just have the latest)
 
+Support a config spread across multiple files
+
+  Simple: if the config path given is a directory, all .json descendants are merged into one config
+
 Implement support for StopBuild command
 
 Implement all remaining todos
