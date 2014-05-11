@@ -4,11 +4,21 @@ TODO
 
 Add build commands into the UI
 
+Interpret exit codes other than 1 from poll as indicating a failure to poll
+
+  This should not trigger a build or create a new build file
+
+  Just update index.json so that "latest" is not a real build, but a special
+  build indicating a failed poll (that way, you don't accumulate a huge list of failed
+  poll entries - you just have the latest)
+
 Implement support for StopBuild command
 
 Implement all remaining todos
 
 Include information about how each build was started
+
+Output a trailing newline to JSON files
 
 Write documentation
 
