@@ -16,11 +16,12 @@ tested-with:    GHC == 7.6.3, GHC == 7.8.1
 data-files:
   ui/index.html
   ui/style.css
-  ui/main.js
+  ui/api.js
+  ui/classy.js
   ui/dom.js
+  ui/main.js
   ui/router.js
   ui/views.js
-  ui/api.js
   ui/ext/classyjs/build/classy.js
   ui/ext/pathjs/path.js
   ui/ext/q/q.js
